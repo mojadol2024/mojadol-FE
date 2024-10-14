@@ -103,10 +103,6 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            buildConfigField("String", "NATIVE_APP_KEY", "\"${System.getenv('NATIVE_APP_KEY')}\"")
-        }
-        debug {
-            buildConfigField("String", "NATIVE_APP_KEY", "\"${System.getenv('NATIVE_APP_KEY')}\"")
         }
     }
 }
