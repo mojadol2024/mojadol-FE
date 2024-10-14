@@ -19,7 +19,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 10,
     marginVertical: 10,
-    borderRadius: 5,
+    borderRadius: 22.375,
+    width: 300
   },
 });
 

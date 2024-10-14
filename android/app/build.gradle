@@ -103,6 +103,10 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            buildConfigField("String", "NATIVE_APP_KEY", "\"${System.getenv('NATIVE_APP_KEY')}\"")
+        }
+        debug {
+            buildConfigField("String", "NATIVE_APP_KEY", "\"${System.getenv('NATIVE_APP_KEY')}\"")
         }
     }
 }
@@ -110,7 +114,6 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
