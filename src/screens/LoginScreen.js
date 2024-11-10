@@ -5,7 +5,8 @@ import CustomButton from '../components/CustomButton';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
+import { API_URL } from '@env';
 const LoginScreen = ({ navigation }) => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
@@ -14,12 +15,20 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post('${API_URL}/auth/login', {
+            const response = await axios.post(`${API_URL}/auth/login`, {
                 userId: userId,
                 userPw: userPw,
             });
             const accessToken = response.headers.get("accessToken");
             await AsyncStorage.setItem('accessToken', accessToken);
+            // 로그인 성공 후 FCM 토큰 저장
+            const token = await getFCMToken();
+            if (token) {
+                // 서버에 토큰 저장 (userId는 로그인 후에 얻은 값으로 사용)
+                console.log(token);
+                saveTokenToServer(token, userId);  // 여기서 userId를 서버로 보냄
+            }
+
             setResponseMessage(`Login successful: ${response.data.message}`);
             console.log("navigating to home");
             navigation.navigate('Home');
@@ -34,7 +43,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleKakaoLogin = async () => {
         try {
-            const response = await axios.get('${API_URL}/auth/kakao/login');
+            const response = await axios.get(`${API_URL}/auth/kakao/login`);
             if (response.data.location) {
                 setLoginUrl(response.data.location);
             } else {

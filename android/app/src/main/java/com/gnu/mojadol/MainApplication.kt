@@ -1,4 +1,4 @@
-package com.mojadol
+package com.gnu.mojadol
 
 import android.app.Application
 import com.facebook.react.PackageList
