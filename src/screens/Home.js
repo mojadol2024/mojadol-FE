@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { requestNotificationPermission } from '../utils/FCMUtils';
 
 const Home = ({ navigation }) => {
     const [accessToken, setAccessToken] = useState('');
@@ -19,7 +20,12 @@ const Home = ({ navigation }) => {
             }
         };
 
+        const requestPermissions = async () => {
+            await requestNotificationPermission(); // 알림 권한 요청
+        };
+
         getToken();
+        requestPermissions();
     }, []);
 
     const handleLogout = async () => {

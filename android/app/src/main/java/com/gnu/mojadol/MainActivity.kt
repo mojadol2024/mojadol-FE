@@ -1,4 +1,4 @@
-package com.mojadol
+package com.gnu.mojadol
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
