@@ -1,63 +1,111 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import CustomInput from '../components/CustomInput';
-import CustomButton from '../components/CustomButton';
-import axios from 'axios';
-import { API_URL } from '@env';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
 
-const SignUpScreen = ({ navigation }) => {
+const SignUpScreen = () => {
     const [userId, setUserId] = useState('');
-    const [userPw, setUserPw] = useState('');
-    const [confirmPw, setConfirmPw] = useState('');
-    const [responseMessage, setResponseMessage] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [name, setName] = useState('');
+    const [birthYear, setBirthYear] = useState('');
+    const [birthMonth, setBirthMonth] = useState('');
+    const [birthDay, setBirthDay] = useState('');
+    const [gender, setGender] = useState('');
+    const [isMonthModalVisible, setMonthModalVisible] = useState(false);
 
-    const handleSignUp = async () => {
-        if (userPw !== confirmPw) {
-            Alert.alert('Error', 'Passwords do not match');
+    const handleSignUp = () => {
+        if (!userId || !password || !confirmPassword || !name) {
+            Alert.alert('Error', '모든 필드를 입력해 주세요.');
             return;
         }
-
-        try {
-            const response = await axios.post(`${API_URL}/auth/signup`, {
-                userId: userId,
-                userPw: userPw,
-            });
-            setResponseMessage(`Sign-up successful: ${response.data.message}`);
-            console.log('Navigating to login');
-            navigation.navigate('Login');
-        } catch (error) {
-            if (error.response) {
-                setResponseMessage(`Sign-up failed: ${error.response.data.error}`);
-            } else {
-                setResponseMessage('Error connecting to the server');
-            }
+        if (password !== confirmPassword) {
+            Alert.alert('Error', '비밀번호가 일치하지 않습니다.');
+            return;
         }
+        Alert.alert('Success', '회원가입이 완료되었습니다.');
     };
+
+    const renderMonthModal = () => (
+        <Modal visible={isMonthModalVisible} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                    {[...Array(12)].map((_, i) => (
+                        <TouchableOpacity
+                            key={i + 1}
+                            onPress={() => {
+                                setBirthMonth(i + 1);
+                                setMonthModalVisible(false);
+                            }}
+                            style={styles.modalItem}
+                        >
+                            <Text style={styles.modalItemText}>{i + 1}월</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        </Modal>
+    );
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Sign Up</Text>
-            <CustomInput
-                placeholder="ID"
+            <TextInput
+                style={styles.input}
+                placeholder="아이디"
                 value={userId}
                 onChangeText={setUserId}
             />
-            <CustomInput
-                placeholder="Password"
-                value={userPw}
-                onChangeText={setUserPw}
+            <TextInput
+                style={styles.input}
+                placeholder="비밀번호"
+                value={password}
+                onChangeText={setPassword}
                 secureTextEntry
             />
-            <CustomInput
-                placeholder="Confirm Password"
-                value={confirmPw}
-                onChangeText={setConfirmPw}
+            <TextInput
+                style={styles.input}
+                placeholder="비밀번호 재확인"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
                 secureTextEntry
             />
-            <CustomButton title="Sign Up" onPress={handleSignUp} />
-            {responseMessage && <Text>{responseMessage}</Text>}
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginLink}>
-                <Text style={styles.loginText}>Already have an account? Log in</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="이름"
+                value={name}
+                onChangeText={setName}
+            />
+            <View style={styles.birthContainer}>
+                <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    placeholder="년(4자)"
+                    value={birthYear}
+                    onChangeText={setBirthYear}
+                    keyboardType="numeric"
+                    maxLength={4}
+                />
+                <TouchableOpacity
+                    style={[styles.input, { flex: 1, justifyContent: 'center' }]}
+                    onPress={() => setMonthModalVisible(true)}
+                >
+                    <Text>{birthMonth ? `${birthMonth}월` : '월'}</Text>
+                </TouchableOpacity>
+                <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    placeholder="일"
+                    value={birthDay}
+                    onChangeText={setBirthDay}
+                    keyboardType="numeric"
+                    maxLength={2}
+                />
+            </View>
+            <TouchableOpacity
+                style={styles.input}
+                onPress={() => Alert.alert('성별 선택')}
+            >
+                <Text>{gender || '성별'}</Text>
+            </TouchableOpacity>
+            {renderMonthModal()}
+            <TouchableOpacity style={styles.submitButton} onPress={handleSignUp}>
+                <Text style={styles.submitButtonText}>가입하기</Text>
             </TouchableOpacity>
         </View>
     );
@@ -66,24 +114,55 @@ const SignUpScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 20,
+        backgroundColor: '#f5f5f5',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 5,
+    },
+    birthContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    modalContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderRadius: 10,
         padding: 20,
+        alignItems: 'center',
+        width: '60%',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
+    modalItem: {
+        padding: 10,
+        marginVertical: 5,
+        width: '100%',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
     },
-    loginLink: {
-        marginTop: 15,
-    },
-    loginText: {
-        color: '#007BFF',
+    modalItemText: {
         fontSize: 16,
-        textDecorationLine: 'underline',
+    },
+    submitButton: {
+        backgroundColor: '#808080',
+        padding: 15,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    submitButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 });
 

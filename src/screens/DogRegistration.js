@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; 
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 
-const DogRegistrationScreen = () => {
+const DogRegistration = () => {
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
   const [age, setAge] = useState('');
@@ -12,6 +11,10 @@ const DogRegistrationScreen = () => {
   const [region, setRegion] = useState('');
   const [characteristics, setCharacteristics] = useState('');
   const [contact, setContact] = useState('');
+  
+  // Modal visibility states
+  const [isGenderModalVisible, setGenderModalVisible] = useState(false);
+  const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
   const handleRegister = () => {
     if (!name || !gender || !age || !weight) {
@@ -40,15 +43,21 @@ const DogRegistrationScreen = () => {
         />
 
         <Text style={styles.label}>성별</Text>
-        <Picker
-          selectedValue={gender}
-          style={styles.input}
-          onValueChange={setGender}
-        >
-          <Picker.Item label="성별 선택" value="" />
-          <Picker.Item label="수컷" value="male" />
-          <Picker.Item label="암컷" value="female" />
-        </Picker>
+        <TouchableOpacity style={styles.input} onPress={() => setGenderModalVisible(true)}>
+          <Text>{gender ? (gender === 'male' ? '수컷' : '암컷') : '성별 선택'}</Text>
+        </TouchableOpacity>
+        <Modal visible={isGenderModalVisible} transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity onPress={() => { setGender('male'); setGenderModalVisible(false); }} style={styles.modalItem}>
+                <Text style={styles.modalItemText}>수컷</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setGender('female'); setGenderModalVisible(false); }} style={styles.modalItem}>
+                <Text style={styles.modalItemText}>암컷</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <Text style={styles.label}>나이</Text>
         <TextInput
@@ -68,7 +77,7 @@ const DogRegistrationScreen = () => {
           onChangeText={setWeight}
         />
 
-        <Text style={styles.label}>실종일</Text>
+        <Text style={styles.label}>발견일</Text>
         <TextInput
           style={styles.input}
           placeholder="예: 2024년 9월 1일"
@@ -84,22 +93,30 @@ const DogRegistrationScreen = () => {
           onChangeText={setBreed}
         />
 
-        <Text style={styles.label}>실종 지역</Text>
-        <Picker
-          selectedValue={region}
-          style={styles.input}
-          onValueChange={setRegion}
-        >
-          <Picker.Item label="지역 선택" value="" />
-          <Picker.Item label="서울" value="seoul" />
-          <Picker.Item label="부산" value="busan" />
-          <Picker.Item label="대구" value="daegu" />
-        </Picker>
+        <Text style={styles.label}>발견 지역</Text>
+        <TouchableOpacity style={styles.input} onPress={() => setRegionModalVisible(true)}>
+          <Text>{region ? region : '지역 선택'}</Text>
+        </TouchableOpacity>
+        <Modal visible={isRegionModalVisible} transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity onPress={() => { setRegion('서울'); setRegionModalVisible(false); }} style={styles.modalItem}>
+                <Text style={styles.modalItemText}>서울</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setRegion('부산'); setRegionModalVisible(false); }} style={styles.modalItem}>
+                <Text style={styles.modalItemText}>부산</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setRegion('대구'); setRegionModalVisible(false); }} style={styles.modalItem}>
+                <Text style={styles.modalItemText}>대구</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <Text style={styles.label}>특이사항</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="강아지의 특징, 실종된 장소 등 정보를 작성해주세요."
+          placeholder="강아지의 특징, 발견된 장소 등 정보를 작성해주세요."
           multiline
           numberOfLines={4}
           value={characteristics}
@@ -155,6 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
   },
   textArea: {
     height: 100,
@@ -170,6 +188,30 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    width: '70%',
+  },
+  modalItem: {
+    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  modalItemText: {
+    fontSize: 16,
   },
 });
 

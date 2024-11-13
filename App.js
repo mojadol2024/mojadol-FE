@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginNavigator from './src/navigation/LoginNavigator';
 import messaging from '@react-native-firebase/messaging';
-import BoardClick from './src/screens/BoardClick';  // Board 스크린 import
+import Alarm from './src/screens/Alarm';  // Board 스크린 import
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -26,7 +26,7 @@ const App = () => {
   return (
     
     <NavigationContainer>
-      <LoginNavigator/>
+      <Alarm/>
     </NavigationContainer>
   );
 };
