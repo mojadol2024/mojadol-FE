@@ -1,19 +1,13 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const data = [
-  { id: '1', status: '발견', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '2', status: '실종', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '3', status: '발견', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '4', status: '실종', breed: '푸들이', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '5', status: '발견', breed: '푸들이', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '6', status: '실종', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-];
-
-const App = () => {
+const Board = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedSubLocation, setSelectedSubLocation] = useState('');
   const [subLocationVisible, setSubLocationVisible] = useState(false); // 하위 지역 표시 여부
+  const [boardData, setBoardData] = useState([]);
 
   const locations = [
     { name: '서울', subLocations: [] },
@@ -28,18 +22,39 @@ const App = () => {
     { name: '전라도', subLocations: [] },
   ];
 
+  const boardList = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const response = await axios.get(`http://172.21.14.86:3000/board/list`, {
+        headers: {
+          Authorization: `${accessToken}`,
+        },
+      });
+      const data = response.data;
+      console.log('Board list:', data);
+      setBoardData(data);
+    }catch(error){
+    console.error('Error fetching board list:', error);
+    }
+  };
+
+  useEffect(() => {
+    boardList();
+  }, []);
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.image} />
         {/* 상태 텍스트를 이미지의 왼쪽 상단에 위치시키기 */}
-        <Text style={styles.statusOverlay}>{item.status}</Text>
+        <Text style={styles.statusOverlay}>{item.report}</Text>
       </View>
-      <Text style={styles.breed}>{item.breed}</Text>
-      <Text>발견장소: {item.location}</Text>
-      <Text>특징: {item.features}</Text>
+      <Text style={styles.breed}>{item.breedName}</Text> 
+      <Text>발견장소: {item.dogGender}</Text>  {/* gender를 location으로*/}
+      <Text>실종날짜: {item.lostDate}</Text>
     </View>
   );
+
 
   const handleLocationPress = (locationName) => {
     const location = locations.find((loc) => loc.name === locationName);
@@ -140,9 +155,9 @@ const App = () => {
 
       {/* FlatList 컴포넌트 */}
       <FlatList
-        data={data}
+        data={boardData}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.nickName}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.contentContainer}
@@ -307,4 +322,4 @@ writeButtonText: {
   },
 });
 
-export default App;
+export default Board;
