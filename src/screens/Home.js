@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const Home = ({ navigation }) => {
     const [accessToken, setAccessToken] = useState('');
@@ -31,6 +32,10 @@ const Home = ({ navigation }) => {
         }
     };
 
+    const handleRedirectToBoard = () => {
+        navigation.navigate('Board'); // Navigates to the Board screen
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Welcome to Home!</Text>
@@ -40,6 +45,7 @@ const Home = ({ navigation }) => {
                 <Text style={styles.tokenText}>No access token available.</Text>
             )}
             <Button title="Logout" onPress={handleLogout} />
+            <Button title="Go to Board" onPress={handleRedirectToBoard} />
         </View>
     );
 };

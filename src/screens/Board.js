@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const data = [
-  { id: '1', status: '발견', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '2', status: '실종', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '3', status: '발견', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '4', status: '실종', breed: '푸들이', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '5', status: '발견', breed: '푸들이', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-  { id: '6', status: '실종', breed: '말티즈', location: '00시 00동', features: '', image: 'https://via.placeholder.com/100' },
-];
-
-const App = () => {
+const Board = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedSubLocation, setSelectedSubLocation] = useState('');
   const [subLocationVisible, setSubLocationVisible] = useState(false); // 하위 지역 표시 여부
@@ -27,6 +20,24 @@ const App = () => {
     { name: '경상북도', subLocations: [] },
     { name: '전라도', subLocations: [] },
   ];
+
+  const boardList = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const response = await axios.get(`http://172.21.14.86:3000/board/list`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = response.data;
+    }catch(error){
+    console.error('Error fetching board list:', error);
+    }
+  };
+
+  useEffect(() => {
+    boardList();
+  }, []);
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -140,7 +151,7 @@ const App = () => {
 
       {/* FlatList 컴포넌트 */}
       <FlatList
-        data={data}
+        data={boardList}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
@@ -307,4 +318,4 @@ writeButtonText: {
   },
 });
 
-export default App;
+export default Board;

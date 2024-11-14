@@ -5,6 +5,7 @@ import CustomButton from '../components/CustomButton';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
 const LoginScreen = ({ navigation }) => {
     const [userId, setUserId] = useState('');
@@ -14,7 +15,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post('${API_URL}/auth/login', {
+            const response = await axios.post(`http://172.21.14.86:3000/auth/login`, {
                 userId: userId,
                 userPw: userPw,
             });
@@ -54,14 +55,14 @@ const LoginScreen = ({ navigation }) => {
                 onNavigationStateChange={async (navState) => {
                     console.log("URL:", navState.url);
                     console.log("Headers:", navState.headers);
-    
+
                     const accessTokenMatch = navState.url.match(/accessToken=([^&]+)/);
                     if (accessTokenMatch && navState.canGoBack === true) {
                         const accessToken = accessTokenMatch[1];
                         console.log("Access Token extracted:", accessToken);
                         await AsyncStorage.setItem("accessToken", accessToken);
                         console.log("Access Token stored:", accessToken);
-                        
+
                         setLoginUrl(null);
                         console.log("Navigating to home");
                         navigation.navigate('Home');
