@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginNavigator from './src/navigation/LoginNavigator';
-import messaging from '@react-native-firebase/messaging';
-import Alarm from './src/screens/Alarm';  // Board 스크린 import
+import Board from './src/screens/Board';  // Board 스크린 import
+
 const Stack = createStackNavigator();
 
 const App = () => {

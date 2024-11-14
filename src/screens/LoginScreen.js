@@ -63,14 +63,14 @@ const LoginScreen = ({ navigation }) => {
                 onNavigationStateChange={async (navState) => {
                     console.log("URL:", navState.url);
                     console.log("Headers:", navState.headers);
-    
+
                     const accessTokenMatch = navState.url.match(/accessToken=([^&]+)/);
                     if (accessTokenMatch && navState.canGoBack === true) {
                         const accessToken = accessTokenMatch[1];
                         console.log("Access Token extracted:", accessToken);
                         await AsyncStorage.setItem("accessToken", accessToken);
                         console.log("Access Token stored:", accessToken);
-                        
+
                         setLoginUrl(null);
                         console.log("Navigating to home");
                         navigation.navigate('Home');
