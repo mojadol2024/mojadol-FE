@@ -7,6 +7,7 @@ const Board = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedSubLocation, setSelectedSubLocation] = useState('');
   const [subLocationVisible, setSubLocationVisible] = useState(false); // 하위 지역 표시 여부
+  const [boardData, setBoardData] = useState([]);
 
   const locations = [
     { name: '서울', subLocations: [] },
@@ -26,10 +27,12 @@ const Board = () => {
       const accessToken = await AsyncStorage.getItem('accessToken');
       const response = await axios.get(`http://172.21.14.86:3000/board/list`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `${accessToken}`,
         },
       });
       const data = response.data;
+      console.log('Board list:', data);
+      setBoardData(data);
     }catch(error){
     console.error('Error fetching board list:', error);
     }
@@ -44,13 +47,14 @@ const Board = () => {
       <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.image} />
         {/* 상태 텍스트를 이미지의 왼쪽 상단에 위치시키기 */}
-        <Text style={styles.statusOverlay}>{item.status}</Text>
+        <Text style={styles.statusOverlay}>{item.report}</Text>
       </View>
-      <Text style={styles.breed}>{item.breed}</Text>
-      <Text>발견장소: {item.location}</Text>
-      <Text>특징: {item.features}</Text>
+      <Text style={styles.breed}>{item.breedName}</Text> 
+      <Text>발견장소: {item.dogGender}</Text>  {/* gender를 location으로*/}
+      <Text>실종날짜: {item.lostDate}</Text>
     </View>
   );
+
 
   const handleLocationPress = (locationName) => {
     const location = locations.find((loc) => loc.name === locationName);
@@ -151,9 +155,9 @@ const Board = () => {
 
       {/* FlatList 컴포넌트 */}
       <FlatList
-        data={boardList}
+        data={boardData}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.nickName}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.contentContainer}

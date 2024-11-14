@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginNavigator from './src/navigation/LoginNavigator';
+import '@react-native-firebase/app'; // This initializes Firebase automatically
+import messaging from '@react-native-firebase/messaging'; // Import messaging module
 import Board from './src/screens/Board';  // Board 스크린 import
 
 const Stack = createStackNavigator();
@@ -23,13 +25,12 @@ const App = () => {
       }
     });
   }, []);
+
   return (
-    
     <NavigationContainer>
-      <Alarm/>
+      <LoginNavigator />
     </NavigationContainer>
   );
 };
 
 export default App;
-
