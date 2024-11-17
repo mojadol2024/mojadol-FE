@@ -1,198 +1,204 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
+import Swiper from 'react-native-swiper';
+import axios from 'axios';
+import { API_URL } from '@env';
+import { useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const App = () => {
-  const [comments, setComments] = useState([
-    { id: '1', user: '익명 1', comment: '시내에서 본 거 같아요', replies: [] },
-    { id: '2', user: '익명 2', comment: '꼭 찾길 바랄게요', replies: [] },
-    { id: '3', user: '글쓴이', comment: '감사합니다!', replies: [] },
-  ]);
-
+  const route = useRoute();
+  const { boardSeq } = route.params;
+  const [comments, setComments] = useState([]);
+  const [boardDetail, setBoardDetail] = useState(null);
   const [newComment, setNewComment] = useState('');
-  const [newReply, setNewReply] = useState('');
-  const [replyTo, setReplyTo] = useState(null);
-  const [isAuthor, setIsAuthor] = useState(true);
+  const [replies, setReplies] = useState({}); // 각 댓글에 대한 답글 상태
+  const [showReplyInput, setShowReplyInput] = useState(null); // 답글 입력창을 열 댓글을 관리
 
-  const addComment = () => {
-    if (newComment.trim()) {
+  // 게시글 상세 정보 가져오기
+  useEffect(() => {
+    const fetchBoardDetail = async () => {
+      try {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const response = await axios.get(
+          `${API_URL}/board/boardDetail?boardSeq=${boardSeq}`,
+          {
+            headers: { Authorization: `${accessToken}` },
+          }
+        );
+
+        const { boardDetail, comments } = response.data;
+        setBoardDetail(boardDetail);
+        setComments(comments);
+      } catch (error) {
+        console.error('Error fetching board details:', error);
+      }
+    };
+
+    fetchBoardDetail();
+  }, [boardSeq]);
+
+  // 댓글 전송
+  const sendComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      await axios.post(
+        `${API_URL}/comments/write`,
+        { boardSeq, commentText: newComment },
+        { headers: { Authorization: `${accessToken}` } }
+      );
       setComments([
         ...comments,
-        {
-          id: Math.random().toString(),
-          user: isAuthor ? '글쓴이' : '익명',
-          comment: newComment,
-          replies: []
-        },
+        { commentSeq: comments.length + 1, nickName: '내 댓글', commentText: newComment },
       ]);
       setNewComment('');
+    } catch (error) {
+      console.error('Error sending comment:', error);
     }
   };
 
-  const addReply = (commentId, parentId = null) => {
-    if (newReply.trim()) {
-      const newReplyObj = {
-        id: Math.random().toString(),
-        user: isAuthor ? '글쓴이' : '익명',
-        comment: newReply,
-        replies: [],
-      };
-
-      const addReplyToComments = (commentsList) => {
-        return commentsList.map((comment) => {
-          if (comment.id === commentId) {
-            if (parentId === null) {
-              return { ...comment, replies: [...comment.replies, newReplyObj] };
-            } else {
-              return {
-                ...comment,
-                replies: addReplyToComments(comment.replies),
-              };
+  // 댓글에 답글 추가
+  const sendReply = async (commentSeq) => {
+    const replyText = replies[commentSeq];
+    if (!replyText?.trim()) return;
+    
+    try {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const response = await axios.post(
+            `${API_URL}/comments/reply`,
+            { 
+                boardSeq, 
+                parentCommentSeq: commentSeq, 
+                commentText: replyText 
+            },
+            { 
+                headers: { Authorization: `${accessToken}` } 
             }
-          } else {
-            return {
-              ...comment,
-              replies: addReplyToComments(comment.replies),
-            };
-          }
-        });
-      };
+        );
 
-      setComments((prevComments) => addReplyToComments(prevComments));
-      setNewReply('');
-      setReplyTo(null);
+        setComments([...comments, response.data]);
+        
+        setReplies({ ...replies, [commentSeq]: '' });
+        setShowReplyInput(null);
+    } catch (error) {
+        console.error('Error sending reply:', error);
     }
   };
 
-  const deleteComment = (commentId, user) => {
-    if (user === '글쓴이') {
-      setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
+  // 답글 입력창 토글
+  const toggleReplyInput = (commentSeq) => {
+    if (showReplyInput === commentSeq) {
+      setShowReplyInput(null); // 이미 열려 있으면 닫기
+    } else {
+      setShowReplyInput(commentSeq); // 해당 댓글에 답글 입력창 열기
     }
-  };
-
-  const deleteReply = (commentId, replyId, user) => {
-    if (user === '글쓴이') {
-      const deleteReplyFromComments = (commentsList) => {
-        return commentsList.map((comment) => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              replies: comment.replies.filter((reply) => reply.id !== replyId),
-            };
-          } else {
-            return {
-              ...comment,
-              replies: deleteReplyFromComments(comment.replies),
-            };
-          }
-        });
-      };
-
-      setComments((prevComments) => deleteReplyFromComments(prevComments));
-    }
-  };
-
-  const renderReplies = (replies, parentCommentId) => {
-    return replies.map((reply) => (
-      <View key={reply.id} style={styles.reply}>
-        <View style={styles.commentHeaderContainer}>
-          <Text style={styles.commentUser}>{reply.user}</Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={() => setReplyTo(replyTo === reply.id ? null : reply.id)}
-              style={styles.smallButton}
-            >
-              <Text style={styles.smallButtonText}>답글</Text>
-            </TouchableOpacity>
-            {reply.user === '글쓴이' && (
-              <TouchableOpacity
-                onPress={() => deleteReply(parentCommentId, reply.id, reply.user)}
-                style={styles.smallButton}
-              >
-                <Text style={styles.smallButtonText}>삭제</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-        <Text>{reply.comment}</Text>
-        {replyTo === reply.id && (
-          <View style={styles.replyInputContainer}>
-            <TextInput
-              style={styles.replyInput}
-              value={newReply}
-              onChangeText={setNewReply}
-              placeholder="답글을 입력하세요."
-            />
-            <TouchableOpacity onPress={() => addReply(parentCommentId, reply.id)} style={styles.sendButton}>
-              <Text style={styles.sendButtonText}>보내기</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {renderReplies(reply.replies, reply.id)}
-      </View>
-    ));
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.contentContainer}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: 'https://example.com/dog.jpg' }} style={styles.image} />
-      </View>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.title}>믹스견</Text>
-        <Text>이름: 뽀삐</Text>
-        <Text>나이: 3살</Text>
-        <Text>성별: 암컷(중성화 X)</Text>
-        <Text>몸무게: 2kg</Text>
-        <Text>실종일: 2024년 9월 30일</Text>
-        <Text>실종장소: 경상남도 진주시 가좌동</Text>
-        <Text>특징: 털 색은 누렇고 꼬리가 짧아요</Text>
-        <Text>전화번호: 010-1234-5678</Text>
-      </View>
-
-      <View style={styles.commentHeader}>
-        <Text style={styles.commentHeaderText}>댓글 ({comments.length})</Text>
-      </View>
-
-      {comments.map((item) => (
-        <View key={item.id} style={styles.comment}>
-          <View style={styles.commentHeaderContainer}>
-            <Text style={styles.commentUser}>{item.user}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => setReplyTo(replyTo === item.id ? null : item.id)}
-                style={styles.smallButton}
-              >
-                <Text style={styles.smallButtonText}>답글</Text>
-              </TouchableOpacity>
-              {item.user === '글쓴이' && (
-                <TouchableOpacity
-                  onPress={() => deleteComment(item.id, item.user)}
-                  style={styles.smallButton}
-                >
-                  <Text style={styles.smallButtonText}>삭제</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-          <Text>{item.comment}</Text>
-          {replyTo === item.id && (
-            <View style={styles.replyInputContainer}>
-              <TextInput
-                style={styles.replyInput}
-                value={newReply}
-                onChangeText={setNewReply}
-                placeholder="답글을 입력하세요."
-              />
-              <TouchableOpacity onPress={() => addReply(item.id)} style={styles.sendButton}>
-                <Text style={styles.sendButtonText}>보내기</Text>
-              </TouchableOpacity>
-            </View>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* 이미지 슬라이더 */}
+        <View style={styles.imageContainer}>
+          {boardDetail?.photos?.length > 0 && (
+            <Swiper style={styles.swiper} showsButtons={true}>
+              {boardDetail.photos.map((photo, index) => (
+                <Image key={index} source={{ uri: photo }} style={styles.image} />
+              ))}
+            </Swiper>
           )}
-          {renderReplies(item.replies, item.id)}
         </View>
-      ))}
 
+        {/* 강아지 정보 */}
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>{boardDetail?.dogName || '강아지 이름 없음'}</Text>
+          <Text>견종: {boardDetail?.breedName || '미상'}</Text>
+          <Text>나이: {boardDetail?.dogAge || '알 수 없음'}</Text>
+          <Text>성별: {boardDetail?.dogGender === 1 ? '수컷' : '암컷'}</Text>
+          <Text>몸무게: {boardDetail?.dogWeight || '미상'}kg</Text>
+          <Text>실종일: {boardDetail?.lostDate || '날짜 정보 없음'}</Text>
+          <Text>특징: {boardDetail?.memo || '특징 없음'}</Text>
+        </View>
+
+        {/* 댓글 목록 */}
+        <View style={styles.commentHeader}>
+          <Text style={styles.commentHeaderText}>댓글 ({comments.length})</Text>
+        </View>
+
+        {/* 댓글 목록 - 부모 댓글만 먼저 필터링 */}
+        {comments
+          .filter(comment => !comment.parentCommentSeq) // parentCommentSeq가 없는 댓글만 선택
+          .map((comment) => {
+            // 해당 댓글의 답글들 찾기
+            const repliesForComment = comments.filter(reply => reply.parentCommentSeq === comment.commentSeq);
+
+            return (
+              <View key={`comment-${comment.commentSeq}`} style={styles.commentContainer}>
+                {/* 메인 댓글 */}
+                <View style={styles.mainComment}>
+                  <View style={styles.commentHeader}>
+                    <Text style={styles.commentUser}>{comment.nickName}</Text>
+                    <TouchableOpacity
+                      style={styles.replyButton}
+                      onPress={() => toggleReplyInput(comment.commentSeq)}
+                    >
+                      <Text style={styles.replyButtonText}>답글</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.commentText}>{comment.commentText}</Text>
+                </View>
+
+                {/* 답글 목록 */}
+                {repliesForComment.length > 0 && (
+                  <View style={styles.repliesContainer}>
+                    {repliesForComment.map((reply) => (
+                      <View 
+                        key={`reply-${comment.commentSeq}-${reply.commentSeq}`} 
+                        style={styles.replyComment}
+                      >
+                        <Text style={styles.replyUser}>{reply.nickName}</Text>
+                        <Text style={styles.replyText}>{reply.commentText}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* 답글 입력창 */}
+                {showReplyInput === comment.commentSeq && (
+                  <View style={styles.replyInputContainer}>
+                    <TextInput
+                      style={styles.replyInput}
+                      value={replies[comment.commentSeq] || ''}
+                      onChangeText={(text) => setReplies({ ...replies, [comment.commentSeq]: text })}
+                      placeholder="답글을 입력하세요."
+                    />
+                    <TouchableOpacity
+                      style={styles.replySendButton}
+                      onPress={() => sendReply(comment.commentSeq)}
+                    >
+                      <Text style={styles.sendButtonText}>답글 달기</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            );
+          })}
+
+
+
+      </ScrollView>
+
+      {/* 댓글 입력 (화면 하단에 고정) */}
       <View style={styles.commentInputContainer}>
         <TextInput
           style={styles.commentInput}
@@ -200,112 +206,143 @@ const App = () => {
           onChangeText={setNewComment}
           placeholder="댓글을 입력하세요."
         />
-        <TouchableOpacity onPress={addComment} style={styles.sendButton}>
+        <TouchableOpacity style={styles.sendButton} onPress={sendComment}>
           <Text style={styles.sendButtonText}>보내기</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   contentContainer: {
     padding: 10,
+    paddingBottom: 100, // 댓글 입력창이 가려지지 않도록 여유 공간 확보
   },
   imageContainer: {
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'black',
-    borderRadius: 10,
-    overflow: 'hidden',
     marginBottom: 20,
   },
-  image: {
-    width: 200,
+  swiper: {
     height: 200,
-    marginBottom: 10,
+  },
+  image: {
+    width: width - 20,
+    height: 200,
+    resizeMode: 'cover',
+    borderRadius: 10,
   },
   infoContainer: {
-    marginVertical: 20,
+    marginBottom: 20,
   },
   title: {
+    fontSize: 20,
     fontWeight: 'bold',
-    fontSize: 18,
+    marginBottom: 10,
+  },
+  commentContainer: {
+    marginBottom: 15,
+  },
+  mainComment: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
   },
   commentHeader: {
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  commentHeaderText: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  comment: {
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'black',
-    paddingBottom: 10,
-  },
-  commentHeaderContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
+    marginBottom: 8,
   },
   commentUser: {
     fontWeight: 'bold',
+    fontSize: 14,
   },
-  reply: {
+  commentText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  replyButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  replyButtonText: {
+    color: '#666',
+    fontSize: 12,
+  },
+  repliesContainer: {
     marginLeft: 20,
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'black',
-    paddingBottom: 10,
+    marginTop: 8,
+  },
+  replyComment: {
+    backgroundColor: '#f1f3f5',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  replyUser: {
+    fontWeight: 'bold',
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  replyText: {
+    fontSize: 14,
   },
   replyInputContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 8,
+    marginLeft: 20,
   },
   replyInput: {
+    backgroundColor: '#fff',
     borderWidth: 1,
+    borderColor: '#dee2e6',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  replySendButton: {
+    backgroundColor: '#007bff',
+    padding: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-end',
+  },
+  commentInputContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+  },
+  commentInput: {
     flex: 1,
-    padding: 5,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingLeft: 10,
+    paddingRight: 10,
+    height: 40,
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-    borderColor: '#ddd',
+    backgroundColor: '#007bff',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sendButtonText: {
-    color: 'black',
-  },
-  smallButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    borderColor: '#ddd',
-    marginLeft: 5,
-  },
-  smallButtonText: {
-    color: 'black',
-    fontSize: 12,
-  },
-  commentInputContainer: {
-    marginTop: 20,
-    flexDirection: 'row',
-  },
-  commentInput: {
-    borderWidth: 1,
-    flex: 1,
-    padding: 5,
-    marginRight: 10,
+    color: 'white',
   },
 });
 
