@@ -20,7 +20,9 @@ const LoginScreen = ({ navigation }) => {
                 userPw: userPw,
             });
             const accessToken = response.headers.get("accessToken");
+            const userSeq = response.headers.get("userSeq");
             await AsyncStorage.setItem('accessToken', accessToken);
+            await AsyncStorage.setItem('userSeq', userSeq);
             // 로그인 성공 후 FCM 토큰 저장
             const token = await getFCMToken();
             if (token) {
@@ -30,8 +32,7 @@ const LoginScreen = ({ navigation }) => {
             }
 
             setResponseMessage(`Login successful: ${response.data.message}`);
-            console.log("navigating to home");
-            navigation.navigate('Home');
+            navigation.navigate('Board');
         } catch (error) {
             if (error.response) {
                 setResponseMessage(`Login failed: ${error.response.data.error}`);
@@ -62,18 +63,25 @@ const LoginScreen = ({ navigation }) => {
                 style={{ flex: 1 }}
                 onNavigationStateChange={async (navState) => {
                     console.log("URL:", navState.url);
-                    console.log("Headers:", navState.headers);
 
                     const accessTokenMatch = navState.url.match(/accessToken=([^&]+)/);
-                    if (accessTokenMatch && navState.canGoBack === true) {
+                    const userSeqMatch = navState.url.match(/userSeq=([^&]+)/);
+                    console.log("UserId:", userSeqMatch)
+                    if (accessTokenMatch && userSeqMatch && navState.canGoBack === true) {
                         const accessToken = accessTokenMatch[1];
+                        const userSeq = userSeqMatch[1];
+
                         console.log("Access Token extracted:", accessToken);
-                        await AsyncStorage.setItem("accessToken", accessToken);
+                        console.log("userSeq extracted:", userSeq);
+
+                        await AsyncStorage.setItem('accessToken', "Bearer "+accessToken);
+                        await AsyncStorage.setItem('userSeq', userSeq);
+
                         console.log("Access Token stored:", accessToken);
 
                         setLoginUrl(null);
                         console.log("Navigating to home");
-                        navigation.navigate('Home');
+                        navigation.navigate('Board');
                     }
                 }}
             />
