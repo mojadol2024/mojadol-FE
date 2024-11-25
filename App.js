@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginNavigator from './src/navigation/LoginNavigator';
 import '@react-native-firebase/app'; // This initializes Firebase automatically
 import messaging from '@react-native-firebase/messaging'; // Import messaging module
 import PaymentScreen from './src/screens/Payment';  // Board 스크린 import
+
 
 const Stack = createStackNavigator();
 
