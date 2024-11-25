@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-export default function GooeyMenu({ navigation }) { // navigation props 추가
+export default function GooeyMenu({ }) { // navigation props 추가
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuAnimation] = useState(new Animated.Value(0));
+  const navigation = useNavigation();
 
   const toggleMenu = () => {
     Animated.timing(menuAnimation, {

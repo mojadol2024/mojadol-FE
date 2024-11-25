@@ -6,6 +6,9 @@ import Board from '../screens/Board';
 import BoardDetail from '../screens/BoardClick';
 import BoardUpdate from '../screens/BoardUpdate';
 import DogRegistration from '../screens/DogRegistration';
+import PaymentScreen from '../screens/Payment';
+import MyPage from '../screens/MyPage';
+import MissingDogRegistration from '../screens/MissingDogRegistration';
 const Stack = createStackNavigator();
 
 const LoginNavigator = () => {
@@ -17,6 +20,9 @@ const LoginNavigator = () => {
       <Stack.Screen name="BoardDetail" component={BoardDetail} />
       <Stack.Screen name="BoardUpdate" component={BoardUpdate} />
       <Stack.Screen name="DogRegistration" component={DogRegistration} />
+      <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
+      <Stack.Screen name="MyPage" component={MyPage} />
+      <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
     </Stack.Navigator>
   );
 };

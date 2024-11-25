@@ -14,8 +14,8 @@ export default function App() {
     const payload = {
       pg: '나이스페이',  // ['kcp', 'danal', 'inicis', 'nicepay', 'lgup', 'toss', 'payapp', 'easypay', 'jtnet', 'tpay', 'mobilians', 'payletter', 'onestore', 'welcome'] 중 택 1
       method: '카드',  // ['카드', '휴대폰', '계좌이체', '가상계좌', '카카오페이', '네이버페이', '페이코', '카드자동'] 중 택 1 
-      order_name: '마스카라', // 결제창에 보여질 상품명
-      order_id: '1234_1234', // 개발사에 관리하는 주문번호
+      order_name: '친구비', // 결제창에 보여질 상품명
+      order_id: '1234_1235', // 개발사에 관리하는 주문번호
       price: 1000, // 결제금액
     };
 
@@ -147,13 +147,13 @@ export default function App() {
         style={styles.button}
         onPress={goBootpayTest}
       >
-        <Text>일반결제 결제테스트</Text>
+        <Text>일반결제</Text>
       </TouchableOpacity> 
 
       <Bootpay 
         ref={bootpay}
         ios_application_id={'5b8f6a4d396fa665fdc2b5e9'}
-        android_application_id={'6742cf8031d38115ba3fc7d2'} 
+        android_application_id={'5b8f6a4d396fa665fdc2b5e8'} 
         onCancel={onCancel}
         onError={onError}
         onIssued={onIssued}
@@ -166,14 +166,14 @@ export default function App() {
         style={styles.button}
         onPress={goBootpaySubscriptionTest}
       >
-        <Text>정기결제 테스트</Text>
+        <Text>정기결제</Text>
       </TouchableOpacity> 
 
       <TouchableOpacity
         style={styles.button}
         onPress={goBootpayAuthTest}
       >
-        <Text>본인인증 테스트</Text>
+        <Text>본인인증</Text>
       </TouchableOpacity> 
     </View>
   );
