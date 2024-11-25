@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
-const InquiryScreen = () => {
+const Inquiry = () => {
   const [question, setQuestion] = useState('');
 
   const handleSubmit = () => {
@@ -16,7 +16,7 @@ const InquiryScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>문의하기</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="질문을 입력하세요."
@@ -55,14 +55,14 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     padding: 15,
-    backgroundColor: '#F5D5CB',
+    backgroundColor: '#1A73E8', // 버튼 배경색을 연한 핑크색으로 설정
     borderRadius: 10,
     alignItems: 'center',
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FFFFFF', // 원하는 색상으로 텍스트 색상을 변경
   },
 });
 

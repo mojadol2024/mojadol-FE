@@ -4,41 +4,19 @@ import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
+import styles from '../components/LoginScreenStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
 import { API_URL } from '@env';
+
 const LoginScreen = ({ navigation }) => {
-    const [userId, setUserId] = useState('');
-    const [userPw, setUserPw] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
     const [loginUrl, setLoginUrl] = useState(null);
 
-    const handleLogin = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/auth/login`, {
-                userId: userId,
-                userPw: userPw,
-            });
-            const accessToken = response.headers.get("accessToken");
-            await AsyncStorage.setItem('accessToken', accessToken);
-            // 로그인 성공 후 FCM 토큰 저장
-            const token = await getFCMToken();
-            if (token) {
-                // 서버에 토큰 저장 (userId는 로그인 후에 얻은 값으로 사용)
-                console.log(token);
-                saveTokenToServer(token, userId);  // 여기서 userId를 서버로 보냄
-            }
-
-            setResponseMessage(`Login successful: ${response.data.message}`);
-            console.log("navigating to home");
-            navigation.navigate('Home');
-        } catch (error) {
-            if (error.response) {
-                setResponseMessage(`Login failed: ${error.response.data.error}`);
-            } else {
-                setResponseMessage('Error connecting to the server');
-            }
-        }
+    const handleStart = async () => {
+        // 시작하기 버튼 클릭 시 처리할 로직을 작성합니다.
+        console.log('시작하기 버튼 클릭됨');
+        navigation.navigate('StartLogin');
     };
 
     const handleKakaoLogin = async () => {
@@ -55,25 +33,25 @@ const LoginScreen = ({ navigation }) => {
         }
     };
 
+    useEffect(() => {
+        if (loginUrl) {
+            // When login URL changes, handle redirection logic
+        }
+    }, [loginUrl]);
+
     if (loginUrl) {
         return (
             <WebView
                 source={{ uri: loginUrl, headers: {} }}
                 style={{ flex: 1 }}
                 onNavigationStateChange={async (navState) => {
-                    console.log("URL:", navState.url);
-                    console.log("Headers:", navState.headers);
-    
                     const accessTokenMatch = navState.url.match(/accessToken=([^&]+)/);
                     if (accessTokenMatch && navState.canGoBack === true) {
                         const accessToken = accessTokenMatch[1];
-                        console.log("Access Token extracted:", accessToken);
                         await AsyncStorage.setItem("accessToken", accessToken);
-                        console.log("Access Token stored:", accessToken);
-                        
+
                         setLoginUrl(null);
-                        console.log("Navigating to home");
-                        navigation.navigate('Home');
+                        navigation.navigate('Board');
                     }
                 }}
             />
@@ -82,54 +60,38 @@ const LoginScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
-            <CustomInput
-                placeholder="ID"
-                value={userId}
-                onChangeText={setUserId}
-            />
-            <CustomInput
-                placeholder="Password"
-                value={userPw}
-                onChangeText={setUserPw}
-                secureTextEntry
-            />
-            <CustomButton title="Login" onPress={handleLogin} />
-            {responseMessage && <Text>{responseMessage}</Text>}
+            {/* 로고 및 설명 */}
+            <View style={styles.logoContainer}>
+                <Image source={require('../assets/logo.png')} style={styles.logo} />
+                <Text style={styles.subtitle}>당신의 소중한 반려견을 찾아드리는{`\n`}
+                    <Text style={styles.highlightedText}>'추견 60분'</Text>
+                </Text>
+            </View>
 
-            <TouchableOpacity onPress={handleKakaoLogin} style={styles.kakaoButton}>
-                <Image
-                    source={require('../assets/kakao_login_medium_narrow.png')}
-                    style={styles.kakaoImage}
-                />
+            {/* 시작하기 버튼 */}
+            <View style={styles.startButtonContainer}>
+                <TouchableOpacity onPress={handleStart} style={[styles.startButton, styles.customButton]}>
+                    <Text style={styles.startButtonText}>시작하기</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* 카카오 로그인 버튼 */}
+            <View style={styles.kakaoButtonContainer}>
+                <TouchableOpacity onPress={handleKakaoLogin} style={[styles.kakaoButton, styles.customButton]}>
+                    <Image source={require('../assets/kakao_icon.png')} style={styles.kakaoIcon} />
+                    <Text style={styles.kakaoButtonText}>카카오로 로그인</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* 회원가입 링크 */}
+            <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
+                <Text style={styles.signUpLinkText}>계정이 없으신가요?{' '}
+                    <Text style={styles.signUpLinkTextUnderLine}>회원가입</Text>
+                </Text>
             </TouchableOpacity>
+
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    kakaoButton: {
-        marginTop: 20,
-        alignItems: 'center',
-    },
-    kakaoImage: {
-        width: 250,
-        height: 50,
-        borderRadius: 22.375,
-    },
-});
 
 export default LoginScreen;

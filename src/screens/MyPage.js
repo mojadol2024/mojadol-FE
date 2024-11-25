@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
   },
   activityButton: {
     padding: 10,
-    backgroundColor: '#F5D5CB',
+    backgroundColor: '#808080',
     borderRadius: 10,
   },
   activityButtonText: {
     fontSize: 14,
-    color: '#000',
+    color: '#fff',
   },
   iconContainer: {
     flexDirection: 'row',
@@ -94,12 +94,13 @@ const styles = StyleSheet.create({
   iconButton: {
     width: '30%',
     padding: 10,
-    backgroundColor: '#F5D5CB',
+    backgroundColor: '#808080',
     alignItems: 'center',
     borderRadius: 10,
   },
   iconText: {
     fontSize: 14,
+    color: '#fff',
   },
   menuContainer: {
     marginTop: 20,
