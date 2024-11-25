@@ -5,7 +5,8 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import { generateRandomNickname } from '../utils/randomNick';
 
-const SignUpScreen = ({ navigation }) => {
+
+const SignUpScreen = () => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
     const [email, setEmail] = useState('');
@@ -51,6 +52,7 @@ const SignUpScreen = ({ navigation }) => {
                 setResponseMessage('Error connecting to the server');
             }
         }
+        Alert.alert('Success', '회원가입이 완료되었습니다.');
     };
 
     const handlePasswordInput = (text) => {
@@ -127,10 +129,26 @@ const SignUpScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 20,
+        backgroundColor: '#f5f5f5',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 5,
+    },
+    birthContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    modalContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     title: {
         fontSize: 24,
@@ -200,7 +218,17 @@ const styles = StyleSheet.create({
     loginTextUnderLine: {
         color: '#007BFF',
         fontSize: 16,
-        textDecorationLine: 'underline',
+    },
+    submitButton: {
+        backgroundColor: '#808080',
+        padding: 15,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    submitButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 });
 

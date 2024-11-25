@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import Button from './Button'; // Button 컴포넌트 import
+//Button의 위치가 이상함 -> 화남
 
 const DogRegistration = () => {
   const [name, setName] = useState('');
@@ -11,6 +13,10 @@ const DogRegistration = () => {
   const [region, setRegion] = useState('');
   const [characteristics, setCharacteristics] = useState('');
   const [contact, setContact] = useState('');
+  
+  // Modal visibility states
+  const [isGenderModalVisible, setGenderModalVisible] = useState(false);
+  const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
   // Modal visibility states
   const [isGenderModalVisible, setGenderModalVisible] = useState(false);
@@ -131,9 +137,13 @@ const DogRegistration = () => {
           onChangeText={setContact}
         />
 
+        {/* 기존 등록 버튼 */}
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
           <Text style={styles.registerButtonText}>등록</Text>
         </TouchableOpacity>
+
+        {/* 추가된 Button.js 컴포넌트 버튼 */}
+        <Button title="추가 버튼" onPress={() => alert('추가 버튼 클릭')} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -145,12 +155,12 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
   },
   imageContainer: {
     width: '100%',
     height: 150,
-    backgroundColor: '#D8B894',
+    backgroundColor: '#C78C30',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -162,13 +172,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#444444',
     marginBottom: 5,
   },
   input: {
     height: 40,
-    borderColor: '#CCCCCC',
+    borderColor: '#C78C30',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 22.375,
     paddingHorizontal: 10,
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
@@ -179,7 +190,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   registerButton: {
-    backgroundColor: '#D8B894',
+    backgroundColor: '#C78C30',
     paddingVertical: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -207,8 +218,8 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginVertical: 5,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22.375,
   },
   modalItemText: {
     fontSize: 16,

@@ -13,10 +13,33 @@ const LoginScreen = ({ navigation }) => {
     const [responseMessage, setResponseMessage] = useState('');
     const [loginUrl, setLoginUrl] = useState(null);
 
-    const handleStart = async () => {
-        // 시작하기 버튼 클릭 시 처리할 로직을 작성합니다.
-        console.log('시작하기 버튼 클릭됨');
-        navigation.navigate('StartLogin');
+    const handleLogin = async () => {
+        try {
+            const response = await axios.post(`${API_URL}/auth/login`, {
+                userId: userId,
+                userPw: userPw,
+            });
+            const accessToken = response.headers.get("accessToken");
+            const userSeq = response.headers.get("userSeq");
+            await AsyncStorage.setItem('accessToken', accessToken);
+            await AsyncStorage.setItem('userSeq', userSeq);
+            // 로그인 성공 후 FCM 토큰 저장
+            const token = await getFCMToken();
+            if (token) {
+                // 서버에 토큰 저장 (userId는 로그인 후에 얻은 값으로 사용)
+                console.log(token);
+                saveTokenToServer(token, userId);  // 여기서 userId를 서버로 보냄
+            }
+
+            setResponseMessage(`Login successful: ${response.data.message}`);
+            navigation.navigate('Board');
+        } catch (error) {
+            if (error.response) {
+                setResponseMessage(`Login failed: ${error.response.data.error}`);
+            } else {
+                setResponseMessage('Error connecting to the server');
+            }
+        }
     };
 
     const handleKakaoLogin = async () => {
@@ -45,12 +68,27 @@ const LoginScreen = ({ navigation }) => {
                 source={{ uri: loginUrl, headers: {} }}
                 style={{ flex: 1 }}
                 onNavigationStateChange={async (navState) => {
+
+                    console.log("URL:", navState.url);
+
                     const accessTokenMatch = navState.url.match(/accessToken=([^&]+)/);
-                    if (accessTokenMatch && navState.canGoBack === true) {
+                    const userSeqMatch = navState.url.match(/userSeq=([^&]+)/);
+                    console.log("UserId:", userSeqMatch)
+                    if (accessTokenMatch && userSeqMatch && navState.canGoBack === true) {
                         const accessToken = accessTokenMatch[1];
-                        await AsyncStorage.setItem("accessToken", accessToken);
+
+                        const userSeq = userSeqMatch[1];
+
+                        console.log("Access Token extracted:", accessToken);
+                        console.log("userSeq extracted:", userSeq);
+
+                        await AsyncStorage.setItem('accessToken', "Bearer "+accessToken);
+                        await AsyncStorage.setItem('userSeq', userSeq);
+
+                        console.log("Access Token stored:", accessToken);
 
                         setLoginUrl(null);
+                        console.log("Navigating to home");
                         navigation.navigate('Board');
                     }
                 }}
