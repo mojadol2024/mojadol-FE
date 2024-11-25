@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Alert
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import styles from '../components/BoardClickStyle.js';
+import { BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 
 const App = () => {
   const route = useRoute();
@@ -23,12 +27,18 @@ const App = () => {
   const [newComment, setNewComment] = useState('');
   const [replies, setReplies] = useState({}); // 각 댓글에 대한 답글 상태
   const [showReplyInput, setShowReplyInput] = useState(null); // 답글 입력창을 열 댓글을 관리
+  const [isAuthor, setIsAuthor] = useState(false);
+  const navigation = useNavigation();
+
+  const bannerAdUnitId = __DEV__ ? process.env.BANNER_AD_UNIT_ID_DEV : process.env.BANNER_AD_UNIT_ID_PROD;
+
 
   // 게시글 상세 정보 가져오기
   useEffect(() => {
     const fetchBoardDetail = async () => {
       try {
         const accessToken = await AsyncStorage.getItem('accessToken');
+        const userSeq = await AsyncStorage.getItem('userSeq');
         const response = await axios.get(
           `${API_URL}/board/boardDetail?boardSeq=${boardSeq}`,
           {
@@ -39,6 +49,8 @@ const App = () => {
         const { boardDetail, comments } = response.data;
         setBoardDetail(boardDetail);
         setComments(comments);
+
+        setIsAuthor(boardDetail.userSeq == userSeq);
       } catch (error) {
         console.error('Error fetching board details:', error);
       }
@@ -79,7 +91,7 @@ const App = () => {
             `${API_URL}/comments/reply`,
             { 
                 boardSeq, 
-                parentCommentSeq: commentSeq, 
+                parentCommentSeq: commentSeq,
                 commentText: replyText 
             },
             { 
@@ -93,6 +105,26 @@ const App = () => {
         setShowReplyInput(null);
     } catch (error) {
         console.error('Error sending reply:', error);
+    }
+  };
+
+  // 글 삭제
+  const handleDelete = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      await axios.post(`${API_URL}/board/delete`, 
+        {
+          boardSeq: boardDetail.boardSeq
+        },
+        {
+          headers: { Authorization: `${accessToken}`}
+        }
+      );
+      // 삭제 후 이전 화면으로 이동
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error deleting board:', error);
+      Alert.alert('삭제 실패', '게시글 삭제에 실패했습니다.');
     }
   };
 
@@ -129,6 +161,48 @@ const App = () => {
           <Text>실종일: {boardDetail?.lostDate || '날짜 정보 없음'}</Text>
           <Text>특징: {boardDetail?.memo || '특징 없음'}</Text>
         </View>
+
+          {/* 광고 배너 */ }
+        <View style={styles.bannerAdContainer}>
+          <BannerAd
+            unitId={bannerAdUnitId}
+            size={BannerAdSize.BANNER}
+            onAdFailedToLoad={(error) => console.error('Ad failed to load', error)} // 광고 로딩 실패 처리
+          />
+        </View>
+
+        {isAuthor && (
+            <View style={styles.authorButtons}>
+              <TouchableOpacity 
+                style={styles.button}
+                onPress={() => navigation.navigate('BoardUpdate', { boardSeq })}
+              >
+                <Text style={styles.editButtonText}>수정</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.button}
+                onPress={() => {
+                  Alert.alert(
+                    '게시글 삭제',
+                    '정말로 삭제하시겠습니까?',
+                    [
+                      {
+                        text: '취소',
+                        style: 'cancel',
+                      },
+                      {
+                        text: '삭제',
+                        onPress: handleDelete,
+                        style: 'destructive',
+                      },
+                    ]
+                  );
+                }}
+                >
+                <Text style={styles.deleteButtonText}>삭제</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
         {/* 댓글 목록 */}
         <View style={styles.commentHeader}>
@@ -194,8 +268,6 @@ const App = () => {
             );
           })}
 
-
-
       </ScrollView>
 
       {/* 댓글 입력 (화면 하단에 고정) */}
@@ -213,137 +285,5 @@ const App = () => {
     </View>
   );
 };
-
-const { width } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 10,
-    paddingBottom: 100, // 댓글 입력창이 가려지지 않도록 여유 공간 확보
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  swiper: {
-    height: 200,
-  },
-  image: {
-    width: width - 20,
-    height: 200,
-    resizeMode: 'cover',
-    borderRadius: 10,
-  },
-  infoContainer: {
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  commentContainer: {
-    marginBottom: 15,
-  },
-  mainComment: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  commentUser: {
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  commentText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  replyButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  replyButtonText: {
-    color: '#666',
-    fontSize: 12,
-  },
-  repliesContainer: {
-    marginLeft: 20,
-    marginTop: 8,
-  },
-  replyComment: {
-    backgroundColor: '#f1f3f5',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  replyUser: {
-    fontWeight: 'bold',
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  replyText: {
-    fontSize: 14,
-  },
-  replyInputContainer: {
-    marginTop: 8,
-    marginLeft: 20,
-  },
-  replyInput: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#dee2e6',
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 8,
-  },
-  replySendButton: {
-    backgroundColor: '#007bff',
-    padding: 8,
-    borderRadius: 8,
-    alignSelf: 'flex-end',
-  },
-  commentInputContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  commentInput: {
-    flex: 1,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingLeft: 10,
-    paddingRight: 10,
-    height: 40,
-    marginRight: 10,
-  },
-  sendButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonText: {
-    color: 'white',
-  },
-});
 
 export default App;
