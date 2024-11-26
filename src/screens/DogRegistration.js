@@ -18,10 +18,6 @@ const DogRegistration = () => {
   const [isGenderModalVisible, setGenderModalVisible] = useState(false);
   const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
-  // Modal visibility states
-  const [isGenderModalVisible, setGenderModalVisible] = useState(false);
-  const [isRegionModalVisible, setRegionModalVisible] = useState(false);
-
   const handleRegister = () => {
     if (!name || !gender || !age || !weight) {
       alert("모든 필드를 채워주세요!");

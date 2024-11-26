@@ -8,10 +8,12 @@ import styles from '../components/LoginScreenStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
 import { API_URL } from '@env';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ }) => {
     const [responseMessage, setResponseMessage] = useState('');
     const [loginUrl, setLoginUrl] = useState(null);
+    const navigation = useNavigation();
 
     const handleLogin = async () => {
         try {
@@ -108,7 +110,7 @@ const LoginScreen = ({ navigation }) => {
 
             {/* 시작하기 버튼 */}
             <View style={styles.startButtonContainer}>
-                <TouchableOpacity onPress={handleStart} style={[styles.startButton, styles.customButton]}>
+                <TouchableOpacity onPress={navigation.navigate('StartLogin')} style={[styles.startButton, styles.customButton]}>
                     <Text style={styles.startButtonText}>시작하기</Text>
                 </TouchableOpacity>
             </View>
