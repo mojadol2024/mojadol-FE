@@ -1,13 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import ButtonSection from './Button'; // Button.js 가져오기
+
 
 export default function MyPageScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      {/* 상단 오른쪽에 '나의 활동' 버튼 배치 */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>○○님 환영합니다!</Text>
+        <Text style={styles.greeting}>nickName</Text>
       </View>
 
       {/* 메뉴 섹션 */}
@@ -22,7 +21,7 @@ export default function MyPageScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('')}
+          onPress={() => navigation.navigate('EditProfile')}
         >
           <Text style={styles.menuItemText}>회원 정보 수정</Text>
         </TouchableOpacity>
@@ -60,74 +59,13 @@ export default function MyPageScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* 하단 버튼 섹션 */}
-      <ButtonSection navigation={navigation} />
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000000', // 텍스트 색상 변경
-  },
-  activityButton: {
-    padding: 10,
-    backgroundColor: '#c78c30', // 버튼 배경색
-    borderRadius: 10,
-  },
-  activityButtonText: {
-    fontSize: 14,
-    color: '#FFFFFF', // 버튼 텍스트 색상 변경
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  iconButton: {
-    width: '30%',
-    padding: 10,
-    backgroundColor: '#c78c30', // 버튼 배경색
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  iconText: {
-    fontSize: 14,
-    color: '#FFFFFF', // 버튼 텍스트 색상 변경
-  },
-  menuContainer: {
-    marginTop: 20,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#000000', // 메뉴 제목 색상 변경
-  },
-  menuItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#CCCCCC',
-  },
-  menuItemText: {
-    fontSize: 14,
-    color: '#000000', // 메뉴 항목 텍스트 색상 변경
-  },
-=======
+
   container: {
     flex: 1,
     padding: 20,
@@ -161,5 +99,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC'
   },
->>>>>>> c6d3271 (MyPage 화면 수정)
+
+  menuItemText: {
+    fontSize: 14,
+    color: '#000000'
+  }
+
+
 });
