@@ -21,7 +21,7 @@ export default function MyPageScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('EditProfile')}
+          onPress={() => navigation.navigate('EditProfileScreen')}
         >
           <Text style={styles.menuItemText}>회원 정보 수정</Text>
         </TouchableOpacity>
