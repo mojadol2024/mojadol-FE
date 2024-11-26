@@ -27,7 +27,7 @@ const MyActivityScreen = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
-              <Text>{item.title}</Text>
+              <TouchableOpacity><Text>{item.title}</Text></TouchableOpacity>
             </View>
           )}
         />
@@ -39,7 +39,7 @@ const MyActivityScreen = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
-              <Text>{item.comment}</Text>
+              <TouchableOpacity><Text>{item.comment}</Text></TouchableOpacity>
             </View>
           )}
         />
@@ -60,13 +60,13 @@ const MyActivityScreen = () => {
           style={[styles.tabButton, activeTab === 'posts' && styles.activeTab]}
           onPress={() => setActiveTab('posts')}
         >
-          <Text style={styles.tabText}>내가 쓴 글</Text>
+          <Text style={[styles.tabText, activeTab === 'posts' && styles.activeText]}>내가 쓴 글</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'comments' && styles.activeTab]}
           onPress={() => setActiveTab('comments')}
         >
-          <Text style={styles.tabText}>내가 쓴 댓글</Text>
+          <Text style={[styles.tabText, activeTab === 'comments' && styles.activeText]}>내가 쓴 댓글</Text>
         </TouchableOpacity>
       </View>
 
@@ -77,47 +77,54 @@ const MyActivityScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#6200ee',
-    borderRadius: 5,
-    padding: 10,
-    marginHorizontal: 5,
-    alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#6200ee',
-  },
-  tabText: {
-    color: '#000',
-  },
-  itemContainer: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  content: {
-    flex: 1,
-  },
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  tabButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#c78c30',
+    borderRadius: 22.375,
+    padding: 10,
+    marginHorizontal: 10,
+    alignItems: 'center',
+   
+  },
+  activeTab: {
+    backgroundColor: '#c78c30',
+  },
+  tabText: {
+    color: '#000000',
+    fontWeight: 'bold'
+  },
+  activeText: {
+    color: '#ffffff',
+    fontWeight: 'bold'
+  },
+  itemContainer: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#c78c30',
+  },
+  content: {
+    flex: 1,
+  },
 });
+
 
 export default MyActivityScreen;
