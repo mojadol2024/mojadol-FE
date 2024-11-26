@@ -8,30 +8,25 @@ export default function MyPageScreen({ navigation }) {
       {/* 상단 오른쪽에 '나의 활동' 버튼 배치 */}
       <View style={styles.header}>
         <Text style={styles.greeting}>○○님 환영합니다!</Text>
-        <TouchableOpacity
-          style={styles.activityButton}
-          onPress={() => navigation.navigate('MyActivity')}
-        >
-          <Text style={styles.activityButtonText}>나의 활동</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 아이콘 버튼 섹션 */}
-      <View style={styles.iconContainer}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.iconText}>찜한 목록</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.iconText}>나의 등록</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.iconText}>저장한 검색어</Text>
-        </TouchableOpacity>
       </View>
 
       {/* 메뉴 섹션 */}
       <View style={styles.menuContainer}>
         <Text style={styles.menuTitle}>마이메뉴</Text>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('MyActivity')}
+        >
+          <Text style={styles.menuItemText}>나의 활동</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('')}
+        >
+          <Text style={styles.menuItemText}>회원 정보 수정</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate('NotificationSettings')}
@@ -72,6 +67,7 @@ export default function MyPageScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   container: {
     flex: 1,
     padding: 20,
@@ -131,4 +127,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000000', // 메뉴 항목 텍스트 색상 변경
   },
+=======
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+ 
+  menuContainer: {
+    marginTop: 20,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    color: '#c78c30',
+    paddingVertical: 10,
+    borderBottomWidth: 3,
+    borderBottomColor: '#C78c30'
+  },
+  menuItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC'
+  },
+>>>>>>> c6d3271 (MyPage 화면 수정)
 });
