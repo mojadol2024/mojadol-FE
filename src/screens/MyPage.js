@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-
 export default function MyPageScreen({ navigation }) {
+  // 닉네임 상태 생성
+  const [nickname, setNickname] = useState('닉네임ㅇㅇ1');
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>nickName</Text>
+        <Text style={styles.greeting}>{nickname}</Text>
       </View>
 
       {/* 메뉴 섹션 */}
@@ -40,9 +42,7 @@ export default function MyPageScreen({ navigation }) {
         >
           <Text style={styles.menuItemText}>공지사항</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>자주하는 질문</Text>
-        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate('Inquiry')}
@@ -58,52 +58,46 @@ export default function MyPageScreen({ navigation }) {
           <Text style={styles.menuItemText}>추천 60분 후원하기</Text>
         </TouchableOpacity>
       </View>
-
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
- 
-  menuContainer: {
-    marginTop: 20,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#c78c30',
-    paddingVertical: 10,
-    borderBottomWidth: 3,
-    borderBottomColor: '#C78c30'
-  },
-  menuItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#CCCCCC'
-  },
-
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    marginTop: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  menuContainer: {
+    marginTop: 15,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    color: '#c78c30',
+    paddingVertical: 10,
+    borderBottomWidth: 3,
+    borderBottomColor: '#C78c30',
+  },
+  menuItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
+  },
   menuItemText: {
     fontSize: 14,
-    color: '#000000'
-  }
-
-
+    color: '#000000',
+  },
 });
