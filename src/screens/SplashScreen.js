@@ -13,7 +13,7 @@ const SplashScreen = ({ navigation }) => {
         }).start(() => {
             // 애니메이션이 끝나면 로그인 화면으로 이동
             setTimeout(() => {
-                navigation.replace('Login');
+                navigation.replace('LoginScreen');
             }, 500); // 0.5초 대기 후 이동
         });
     }, []);

@@ -15,14 +15,14 @@ buildscript {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-        classpath ("com.google.gms:google-services:4.4.2")
+        classpath("com.google.gms:google-services:4.4.2")
     }
 }
 
-    allprojects {
+allprojects {
     repositories {
         maven { 
-            url 'https://devrepo.kakao.com/nexus/content/groups/public/' 
+            url 'https://devrepo.kakao.com/nexus/content/groups/public/'
         }
     }
 }
