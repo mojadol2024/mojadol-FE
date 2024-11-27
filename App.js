@@ -28,7 +28,7 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      <LoginNavigator />
+      <Board/>
     </NavigationContainer>
   );
 };

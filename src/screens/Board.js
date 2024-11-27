@@ -2,6 +2,8 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URL} from '@env';
+
 
 const Board = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -21,11 +23,12 @@ const Board = () => {
     { name: '경상북도', subLocations: [] },
     { name: '전라도', subLocations: [] },
   ];
+  
 
   const boardList = async () => {
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await axios.get(`http://172.21.14.86:3000/board/list`, {
+      const response = await axios.get(`${API_URL}/board/list`, {
         headers: {
           Authorization: `${accessToken}`,
         },

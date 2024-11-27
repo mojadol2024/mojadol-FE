@@ -118,3 +118,9 @@ dependencies {
         implementation jscFlavor
     }
 }
+repositories {
+    google()
+    mavenCentral()
+    jcenter() // (optional) 필요에 따라
+    maven { url 'https://plugins.gradle.org/m2/' } // Gradle Plugin Portal 추가
+}
