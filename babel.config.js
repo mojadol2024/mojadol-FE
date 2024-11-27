@@ -16,5 +16,11 @@ module.exports = {
         verbose: false,
       },
     ],
+    [
+      'transform-inline-environment-variables',
+      {
+        include: ['BANNER_AD_UNIT_ID_DEV', 'BANNER_AD_UNIT_ID_PROD'],
+      },
+    ]
   ],
 };

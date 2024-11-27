@@ -16,7 +16,7 @@ const Inquiry = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>문의하기</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="질문을 입력하세요."

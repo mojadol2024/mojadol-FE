@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Alert } from 'react-native';
+import axios from 'axios';
 
 const MissingDogRegistration = () => {
   const [name, setName] = useState('');
@@ -16,7 +17,7 @@ const MissingDogRegistration = () => {
   const [isGenderModalVisible, setGenderModalVisible] = useState(false);
   const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async() => {
     Alert.alert("등록 완료", "실종견 정보가 등록되었습니다.");
   };
 
@@ -133,12 +134,12 @@ const MissingDogRegistration = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
   },
   imageContainer: {
     width: '100%',
     height: 150,
-    backgroundColor: '#D8B894',
+    backgroundColor: '#C78C30',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -154,9 +155,9 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: '#CCCCCC',
+    borderColor: '#444444',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 22.375,
     paddingHorizontal: 10,
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
@@ -167,9 +168,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   registerButton: {
-    backgroundColor: '#D8B894',
+    backgroundColor: '#C78C30',
     paddingVertical: 15,
-    borderRadius: 5,
+    borderRadius: 22.375,
     alignItems: 'center',
   },
   registerButtonText: {
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginVertical: 5,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#FFFFFF',
     borderRadius: 5,
   },
   modalItemText: {

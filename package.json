@@ -25,13 +25,20 @@
     "picker": "^0.1.4",
     "react": "18.3.1",
     "react-native": "0.75.3",
+    "react-native-bootpay-api": "^13.8.43",
+    "react-native-device-info": "7.2.1",
     "react-native-dotenv": "^3.4.11",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.20.0",
+    "react-native-google-mobile-ads": "^14.4.0",
     "react-native-image-picker": "^7.1.2",
+    "react-native-permissions": "^5.2.0",
     "react-native-push-notification": "^8.1.1",
     "react-native-reanimated": "^3.15.3",
     "react-native-safe-area-context": "^4.11.0",
     "react-native-screens": "^3.34.0",
+    "react-native-sensitive-info": "5.5.8",
+    "react-native-swiper": "^1.6.0",
     "react-native-webview": "^13.12.3"
   },
   "devDependencies": {
@@ -48,11 +55,16 @@
     "@react-native/typescript-config": "0.75.3",
     "@types/react-test-renderer": "^18.0.0",
     "babel-jest": "^29.6.3",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
     "metro-react-native-babel-preset": "^0.77.0",
     "prettier": "2.8.8",
-    "react-test-renderer": "18.3.1"
+    "react-test-renderer": "18.3.1",
+    "react-native-webview-bootpay": "^13.8.43",
+    "react-native-sensitive-info": "^13.8.43",
+    "react-native-base64": "^13.8.43",
+    "react-native-device-info": "^13.8.43"
   },
   "engines": {
     "node": ">=18"
