@@ -12,16 +12,17 @@ import MissingDogRegistration from '../screens/MissingDogRegistration';
 import SplashScreen from '../screens/SplashScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import StartLogin from '../screens/StartLogin';
+import ForgetAccount from '../screens/ForgetAccount';
 const Stack = createStackNavigator();
 
 const LoginNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
       <Stack.Screen name="StartLogin" component={StartLogin} />
-      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="ForgetAccount" component={ForgetAccount} />
       <Stack.Screen name="Board" component={Board} />
       <Stack.Screen name="BoardDetail" component={BoardDetail} />
       <Stack.Screen name="BoardUpdate" component={BoardUpdate} />
