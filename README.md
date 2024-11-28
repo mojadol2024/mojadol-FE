@@ -1,79 +1,59 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# MOJADOL
+안드로이드 앱
+## 🖥️ 프로젝트 소개
+잃어버린 강아지의 견종을 알아내고 제보 발생 시 유사한 강아지를 찾아 알림을 주는 안드로이드 애견 어플입니다.
+<br>
 
-# Getting Started
+## 🕰️ 개발 기간
+* 23.09.11일 - 현재
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+### 🧑‍🤝‍🧑 멤버 구성
+- 고건민
+- 김서나
+- 김영언
+- 변경태
+- 이우림
 
-## Step 1: Start the Metro Server
+## ⚙️ 개발환경 
+- `javascript`
+- `react-native.js`
+- `axios`
+- `gradle`
+- **IDE** : vscode, android studio
+- **CI/CD** : dockerHub, GitHub Actions
+- **API** : Kakao Developers, firebase, bootPay
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## 📌 필수 기능
+- 무한 스크롤(페이징)
+- 자동 로그인(앱 껏다 켜도)
+- 예쁜 네비게이터(중요)
 
-To start Metro, run the following command from the _root_ of your React Native project:
+# 백엔드와 연결 상태
+#### 로그인 페이지 - <a href=>상세보기 - WIKI 이동</a>
+- 로그인 O
+- 카카오 로그인 O
+- 로그아웃 O
+- 회원가입 
+- 아이디 찾기 
+- 비밀번호 찾기 
+- 아이디 확인 
+- 메일 인증 확인 
+#### 게시글 페이지 - <a href=>상세보기 - WIKI 이동</a>
+- 글 쓰기 O
+- 강아지 사진 분석 ( 강아지인지 아닌지, 어떤 견종인지, 기존 게시글과 비교하여 유사도 표기)
+- 글 삭제
+- 글 수정
+- 글 리스트 O
+- 글 상세 보기 
+- 댓글 쓰기
+- 댓글 수정
+- 댓글 삭제
+- 답글 쓰기
+- 유사한 게시글 제보 시 알림
+#### 회원(myPage) 페이지 - <a href=>상세보기 - WIKI 이동</a>
+- 회원 정보 수정
+- 비밀번호 확인
+- 유저 정보
+- 유저가 쓴 글
+- 유저가 댓글을 쓴 글
 
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
