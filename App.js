@@ -29,7 +29,7 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      <Board/>
+      <LoginNavigator/>
     </NavigationContainer>
   );
 };

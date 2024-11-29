@@ -21,12 +21,11 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
     "axios": "^1.7.7",
-    "dotenv": "^16.4.5",
     "picker": "^0.1.4",
     "react": "18.3.1",
     "react-native": "0.75.3",
-    "react-native-bootpay-api": "^13.8.43",
-    "react-native-device-info": "7.2.1",
+    "react-native-bootpay-api": "^13.8.42",
+    "react-native-device-info": "^14.0.1",
     "react-native-dotenv": "^3.4.11",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.20.0",
@@ -37,9 +36,10 @@
     "react-native-reanimated": "^3.15.3",
     "react-native-safe-area-context": "^4.11.0",
     "react-native-screens": "^3.34.0",
-    "react-native-sensitive-info": "5.5.8",
+    "react-native-sensitive-info": "^5.5.8",
     "react-native-swiper": "^1.6.0",
-    "react-native-webview": "^13.12.3"
+    "react-native-webview": "^13.12.3",
+    "react-native-base64": "^0.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.8",
@@ -61,10 +61,7 @@
     "metro-react-native-babel-preset": "^0.77.0",
     "prettier": "2.8.8",
     "react-test-renderer": "18.3.1",
-    "react-native-webview-bootpay": "^13.8.43",
-    "react-native-sensitive-info": "^13.8.43",
-    "react-native-base64": "^13.8.43",
-    "react-native-device-info": "^13.8.43"
+    "react-native-webview-bootpay": "^13.8.42"
   },
   "engines": {
     "node": ">=18"
