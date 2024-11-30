@@ -34,6 +34,7 @@ const Board = () => {
     { name: '경상북도', subLocations: [] },
     { name: '전라도', subLocations: [] },
   ];
+  
 
   // 데이터 로딩 함수
   const loadBoardData = async (page) => {

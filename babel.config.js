@@ -9,8 +9,8 @@ module.exports = {
       {
         moduleName: '@env',
         path: '.env',
-        blocklist: null,
-        allowlist: null,
+        blacklist: null, // blocklist -> blacklist
+        whitelist: null, // allowlist -> whitelist
         safe: false,
         allowUndefined: true,
         verbose: false,

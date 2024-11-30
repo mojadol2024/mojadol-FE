@@ -25,6 +25,11 @@ const SignUpScreen = () => {
         number: false,
         specialChar: false,
     });
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [loading, setLoading] = useState(true); // 로딩 상태 추가
+    const [showPassword, setShowPassword] = useState(false); // 비밀번호 보이기/숨기기 추가
+    const [capsLockOn, setCapsLockOn] = useState(false); // Caps Lock 상태
+    const [numLockOn, setNumLockOn] = useState(false); // Num Lock 상태
 
     useEffect(() => {
         const randomNickname = generateRandomNickname();
@@ -101,18 +106,41 @@ const SignUpScreen = () => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/auth/signup`, {
-                userId,
-                userPw,
-                email,
-                phoneNumber,
-                nickname,
+            const response = await axios.post(`${API_URL}/auth/addUser`, {
+                userId: userId,
+                userPw: userPw,
+                mail: email,
+                nickName: nickname,
+                phoneNumber : phoneNumber
             });
-            setResponseMessage(`회원가입 성공: ${response.data.message}`);
-            Alert.alert('Success', '회원가입이 완료되었습니다.');
+            if (response.data === "YES") {
+                setResponseMessage(`Sign-up successful: ${response.data.message}`);
+                console.log('Navigating to login');
+                navigation.navigate('Login');
+            } else {
+                Alert.alert('Error', 'Sign-up failed: User ID already exists');
+            }
         } catch (error) {
             setResponseMessage('회원가입 중 오류가 발생했습니다.');
         }
+        Alert.alert('Success', '회원가입이 완료되었습니다.');
+    };
+
+    const handleIdCheck = async () => {
+        const response = await axios.post(`${API_URL}/auth/checkId`, {
+            userId: userId
+        });
+        if (response.data === "YES") {
+            Alert.alert('Success', 'ID available');
+        } else {
+            Alert.alert('Error', 'ID already exists');
+        }
+    };
+
+    const handlePasswordInput = (text) => {
+        setUserPw(text);
+        setCapsLockOn(/[A-Z]/.test(text) && !/[a-z]/.test(text));
+        setNumLockOn(/\d/.test(text));
     };
 
     if (loading) {

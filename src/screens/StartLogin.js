@@ -1,5 +1,4 @@
-// StartLogin.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -37,6 +36,11 @@ const StartLogin = ({ navigation }) => {
             }
         }
     };
+
+    useEffect(() => {
+        console.log(`${API_URL}`);
+    });
+        
 
     return (
         <View style={styles.container}>

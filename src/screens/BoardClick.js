@@ -28,6 +28,7 @@ const App = () => {
   const [replies, setReplies] = useState({}); // 각 댓글에 대한 답글 상태
   const [showReplyInput, setShowReplyInput] = useState(null); // 답글 입력창을 열 댓글을 관리
   const [isAuthor, setIsAuthor] = useState(false);
+  const [commentSeq, setCommentSeq] = useState();
   const navigation = useNavigation();
 
   const bannerAdUnitId = __DEV__ ? process.env.BANNER_AD_UNIT_ID_DEV : process.env.BANNER_AD_UNIT_ID_PROD;
@@ -80,11 +81,24 @@ const App = () => {
     }
   };
 
+   // 댓글 삭제
+   const deleteComment = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      await axios.post(
+        `${API_URL}/comments/delete`,
+        { commentSeq: commentSeq},
+        { headers: { Authorization: `${accessToken}` } }
+      );
+    } catch (error) {
+      console.error('Error sending comment:', error);
+    }
+  };
+
   // 댓글에 답글 추가
   const sendReply = async (commentSeq) => {
     const replyText = replies[commentSeq];
     if (!replyText?.trim()) return;
-    
     try {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const response = await axios.post(
@@ -100,7 +114,6 @@ const App = () => {
         );
 
         setComments([...comments, response.data]);
-        
         setReplies({ ...replies, [commentSeq]: '' });
         setShowReplyInput(null);
     } catch (error) {
@@ -112,7 +125,7 @@ const App = () => {
   const handleDelete = async () => {
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-      await axios.post(`${API_URL}/board/delete`, 
+      await axios.post(`${API_URL}/board/delete`,
         {
           boardSeq: boardDetail.boardSeq
         },
@@ -228,6 +241,29 @@ const App = () => {
                     >
                       <Text style={styles.replyButtonText}>답글</Text>
                     </TouchableOpacity>
+                    {/* 삭제 버튼 추가 */}
+                    {isAuthor && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => {
+                          setCommentSeq(comment.commentSeq); // 삭제할 댓글의 commentSeq를 설정
+                          Alert.alert(
+                            '댓글 삭제',
+                            '정말로 이 댓글을 삭제하시겠습니까?',
+                            [
+                              { text: '취소', style: 'cancel' },
+                              { 
+                                text: '삭제', 
+                                onPress: deleteComment, 
+                                style: 'destructive' 
+                              },
+                            ]
+                          );
+                        }}
+                      >
+                        <Text style={styles.deleteButtonText}>삭제</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                   <Text style={styles.commentText}>{comment.commentText}</Text>
                 </View>
@@ -285,5 +321,6 @@ const App = () => {
     </View>
   );
 };
+
 
 export default App;

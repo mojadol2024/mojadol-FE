@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -10,6 +10,20 @@ const ForgetAccount = ({ navigation }) => {
     const [verificationCode, setVerificationCode] = useState('');
     const [isCodeSent, setIsCodeSent] = useState(false); // 확인 코드 전송 여부
     const [isCodeVerified, setIsCodeVerified] = useState(false); // 확인 코드 인증 여부
+    const [countdown, setCountdown] = useState(0);
+    const [resendAvailable, setResendAvailable] = useState(false);
+
+    useEffect(() => {
+        let timer;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        } else if (countdown === 0 && !resendAvailable) {
+            setResendAvailable(true);
+        }
+        return () => clearInterval(timer);
+    }, [countdown]);
 
     const handleSendVerificationCode = async () => {
         if (!emailValue) {
@@ -26,6 +40,8 @@ const ForgetAccount = ({ navigation }) => {
                 email: emailValue,
             });
             setIsCodeSent(true);
+            setCountdown(300); // 5분 타이머 시작
+            setResendAvailable(false);
             Alert.alert('Success', '확인 코드가 이메일로 전송되었습니다.');
         } catch (error) {
             Alert.alert('Error', '확인 코드 전송에 실패했습니다.');
