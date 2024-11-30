@@ -1,7 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../screens/LoginScreen';
-import Home from '../screens/Home';
 import Board from '../screens/Board';
 import BoardDetail from '../screens/BoardClick';
 import BoardUpdate from '../screens/BoardUpdate';

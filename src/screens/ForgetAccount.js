@@ -7,9 +7,11 @@ import { API_URL } from '@env';
 const ForgetAccount = ({ navigation }) => {
     const [selectedTab, setSelectedTab] = useState('findId'); // 'findId' or 'findPw'
     const [selectedOption, setSelectedOption] = useState('email'); // 'email' or 'phone'
-    const [inputValue, setInputValue] = useState('');
     const [countdown, setCountdown] = useState(0);
     const [resendAvailable, setResendAvailable] = useState(false);
+    const [mail, setMail] = useState();
+    const [userId, setUserId] = useState();
+    const [code, setCode] = useState();
 
     useEffect(() => {
         let timer;
@@ -26,27 +28,79 @@ const ForgetAccount = ({ navigation }) => {
 
 
     const handleFindAccount = async () => {
-        if (!inputValue) {
+        if (!mail) {
             Alert.alert('Error', 'Please enter the required information.');
             return;
         }
-        if (selectedOption === 'email' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(inputValue)) {
+        if (selectedOption === 'email' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(mail)) {
+            Alert.alert('Error', 'Please enter a valid email address.');
+            return;
+        }
+
+        if (selectedTab === 'findId') {
+            try {
+                // 실제 API 요청을 통해 이메일 또는 휴대폰으로 아이디 또는 비밀번호 전송
+                await axios.post(`${API_URL}/auth/findUserId`, {
+                    mail : mail
+                });
+    
+                // 성공 메시지와 5분 타이머 시작
+                Alert.alert('Success', `Account details have been sent via ${selectedOption}.`);
+                setCountdown(300); // 5분 (300초)
+                setResendAvailable(false);
+            } catch (error) {
+                if (error.response) {
+                    Alert.alert('Failed', error.response.data.error);
+                } else {
+                    Alert.alert('Error', 'Unable to connect to the server');
+                }
+            }
+        } else {
+            try {
+                // 실제 API 요청을 통해 이메일 또는 휴대폰으로 아이디 또는 비밀번호 전송
+                const response = await axios.post(`${API_URL}/auth/findPassword`, {
+                    userId : userId,
+                    mail : mail
+                });
+                if (response.data == "YES") {
+                    // 성공 메시지와 5분 타이머 시작
+                    Alert.alert('Success', `Account details have been sent via ${selectedOption}.`);
+                    setCountdown(300); // 5분 (300초)
+                    setResendAvailable(false);
+                }
+            } catch (error) {
+                if (error.response) {
+                    Alert.alert('Failed', error.response.data.error);
+                } else {
+                    Alert.alert('Error', 'Unable to connect to the server');
+                }
+            }
+        }
+    };
+
+    const handleCheclCode = async () => {
+        if (!userId) {
+            Alert.alert('Error', 'Please enter the required information.');
+            return;
+        }
+        if (selectedOption === 'email' &&!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(mail)) {
             Alert.alert('Error', 'Please enter a valid email address.');
             return;
         }
 
         try {
-            // 실제 API 요청을 통해 이메일 또는 휴대폰으로 아이디 또는 비밀번호 전송
-            await axios.post(`${API_URL}/auth/find`, {
-                type: selectedTab === 'findId' ? 'id' : 'password',
-                method: selectedOption,
-                value: inputValue,
+            // 실제 API 요청을 통해 이메일 또는 휴대폰으로 전송된 인증번호를 확인
+            const response = await axios.post(`${API_URL}/auth/mailCheck`, {
+                userId : userId,
+                mail : mail,
+                code : code
             });
 
-            // 성공 메시지와 5분 타이머 시작
-            Alert.alert('Success', `Account details have been sent via ${selectedOption}.`);
-            setCountdown(300); // 5분 (300초)
-            setResendAvailable(false);
+            if (response.data === "YES") {
+                //navigate 해주시면 됩니다. 비밀번호 재설정 하는 페이지로 리다이렉트
+                console.log("Success");
+            }
+
         } catch (error) {
             if (error.response) {
                 Alert.alert('Failed', error.response.data.error);
@@ -93,8 +147,8 @@ const ForgetAccount = ({ navigation }) => {
                     <TextInput
                         style={styles.input}
                         placeholder={selectedOption === 'email' ? '이메일 주소' : '휴대폰 번호'}
-                        value={inputValue}
-                        onChangeText={setInputValue}
+                        value={mail}
+                        onChangeText={setMail}
                         keyboardType={selectedOption === 'email' ? 'email-address' : 'phone-pad'}
                     />
                     <TouchableOpacity style={styles.button} onPress={handleFindAccount} disabled={countdown > 0}>
@@ -108,14 +162,14 @@ const ForgetAccount = ({ navigation }) => {
                     <TextInput
                         style={styles.input}
                         placeholder="가입한 아이디"
-                        value={inputValue}
-                        onChangeText={setInputValue}
+                        value={userId}
+                        onChangeText={setUserId}
                     />
                     <TextInput
                         style={styles.input}
                         placeholder="비밀번호 재설정을 위한 이메일"
-                        value={inputValue}
-                        onChangeText={setInputValue}
+                        value={mail}
+                        onChangeText={setMail}
                         keyboardType="email-address"
                     />
                     <TouchableOpacity style={styles.button} onPress={handleFindAccount} disabled={countdown > 0}>

@@ -4,7 +4,6 @@ import axios from 'axios';
 import { WebView } from 'react-native-webview';
 import styles from '../components/LoginScreenStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
 import { API_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 

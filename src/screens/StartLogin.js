@@ -1,4 +1,3 @@
-// StartLogin.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import CustomButton from '../components/CustomButton';
