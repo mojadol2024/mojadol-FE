@@ -13,6 +13,7 @@ const StartLogin = ({ navigation }) => {
     
     const handleLogin = async () => {
         try {
+            console.log(`${API_URL}`)
             const response = await axios.post(`${API_URL}/auth/login`, {
                 userId: userId,
                 userPw: userPw,
@@ -39,11 +40,6 @@ const StartLogin = ({ navigation }) => {
             }
         }
     };
-
-    useEffect(() => {
-        console.log(`${API_URL}`);
-    });
-        
 
     return (
         <View style={styles.container}>

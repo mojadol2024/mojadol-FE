@@ -40,6 +40,7 @@ const App = () => {
       try {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const userSeq = await AsyncStorage.getItem('userSeq');
+        console.log(`${API_URL}/board/boardDetail?boardSeq=${boardSeq}`)
         const response = await axios.get(
           `${API_URL}/board/boardDetail?boardSeq=${boardSeq}`,
           {
