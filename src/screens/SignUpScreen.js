@@ -1,64 +1,118 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
 import CustomButton from '../components/CustomButton';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { generateRandomNickname } from '../utils/randomNick';
 
-
 const SignUpScreen = () => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
     const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
     const [nickname, setNickname] = useState('');
-    const [loading, setLoading] = useState(true); // 로딩 상태 추가
-    const [showPassword, setShowPassword] = useState(false); // 비밀번호 보이기/숨기기 추가
-    const [capsLockOn, setCapsLockOn] = useState(false); // Caps Lock 상태
-    const [numLockOn, setNumLockOn] = useState(false); // Num Lock 상태
+    const [loading, setLoading] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isIdAvailable, setIsIdAvailable] = useState(null);
+    const [idValidationMessage, setIdValidationMessage] = useState('');
+    const [idChecked, setIdChecked] = useState(false);
+    const [capsLockOn, setCapsLockOn] = useState(false);
+    const [numLockOn, setNumLockOn] = useState(false);
+    const [passwordRules, setPasswordRules] = useState({
+        length: false,
+        letter: false,
+        number: false,
+        specialChar: false,
+    });
 
-    // 닉네임 자동 생성 요청
     useEffect(() => {
         const randomNickname = generateRandomNickname();
         setNickname(randomNickname);
         setLoading(false);
     }, []);
 
-    const handleSignUp = async () => {
-        if (!email.includes('@')) {
-            Alert.alert('Error', 'Email must contain an @ symbol');
+    const validateId = (id) => /^[a-z0-9]+$/.test(id);
+
+    const validatePassword = (password) => {
+        const rules = {
+            length: password.length >= 8,
+            letter: /[a-zA-Z]/.test(password), // 대소문자 중 하나 포함
+            number: /\d/.test(password),
+            specialChar: /[@$!%*?&]/.test(password),
+        };
+        setPasswordRules(rules);
+        return Object.values(rules).every((rule) => rule);
+    };
+
+    const handlePasswordInput = (text) => {
+        setUserPw(text);
+        validatePassword(text);
+        setCapsLockOn(/[A-Z]/.test(text) && !/[a-z]/.test(text)); // Caps Lock 상태 감지
+        setNumLockOn(/\d/.test(text)); // Num Lock 상태 감지
+    };
+
+    const handleCheckId = async () => {
+        setIdChecked(true);
+        if (!validateId(userId)) {
+            setIdValidationMessage('아이디는 소문자와 숫자만 사용할 수 있습니다.');
+            setIsIdAvailable(false);
             return;
         }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            Alert.alert('Error', 'Please enter a valid email address');
+
+        try {
+            const response = await axios.get(`${API_URL}/auth/check-id`, { params: { userId } });
+            if (response.data.available) {
+                setIdValidationMessage('사용 가능한 아이디입니다.');
+                setIsIdAvailable(true);
+            } else {
+                setIdValidationMessage('이미 사용 중인 아이디입니다.');
+                setIsIdAvailable(false);
+            }
+        } catch (error) {
+            setIdValidationMessage('아이디 확인 중 오류가 발생했습니다.');
+            setIsIdAvailable(false);
+        }
+    };
+
+    const handleSignUp = async () => {
+        if (!idChecked) {
+            Alert.alert('Error', '아이디를 체크하세요.');
+            return;
+        }
+        if (!isIdAvailable) {
+            Alert.alert('Error', '사용 불가능한 아이디입니다.');
+            return;
+        }
+        if (!validatePassword(userPw)) {
+            Alert.alert(
+                'Error',
+                '비밀번호는 최소 8자 이상이며, 대소문자 중 하나, 숫자, 특수문자를 포함해야 합니다.'
+            );
+            return;
+        }
+        if (!email.includes('@')) {
+            Alert.alert('Error', '유효한 이메일을 입력하세요.');
+            return;
+        }
+        if (!/^\d{10,11}$/.test(phoneNumber)) {
+            Alert.alert('Error', '전화번호는 10~11자리 숫자만 가능합니다.');
             return;
         }
 
         try {
             const response = await axios.post(`${API_URL}/auth/signup`, {
-                userId: userId,
-                userPw: userPw,
-                email: email,
-                nickname: nickname, // 자동 생성된 닉네임 추가
+                userId,
+                userPw,
+                email,
+                phoneNumber,
+                nickname,
             });
-            setResponseMessage(`Sign-up successful: ${response.data.message}`);
-            console.log('Navigating to login');
-            navigation.navigate('Login');
+            setResponseMessage(`회원가입 성공: ${response.data.message}`);
+            Alert.alert('Success', '회원가입이 완료되었습니다.');
         } catch (error) {
-            if (error.response) {
-                setResponseMessage(`Sign-up failed: ${error.response.data.error}`);
-            } else {
-                setResponseMessage('Error connecting to the server');
-            }
+            setResponseMessage('회원가입 중 오류가 발생했습니다.');
         }
-        Alert.alert('Success', '회원가입이 완료되었습니다.');
-    };
-
-    const handlePasswordInput = (text) => {
-        setUserPw(text);
-        setCapsLockOn(/[A-Z]/.test(text) && !/[a-z]/.test(text));
-        setNumLockOn(/\d/.test(text));
     };
 
     if (loading) {
@@ -79,24 +133,63 @@ const SignUpScreen = () => {
                     style={styles.input}
                     placeholder="ID"
                     value={userId}
-                    onChangeText={setUserId}
+                    onChangeText={(text) => {
+                        setUserId(text);
+                        setIsIdAvailable(null);
+                        setIdChecked(false);
+                    }}
                 />
+                <TouchableOpacity style={styles.checkIcon} onPress={handleCheckId}>
+                    <Text style={{ color: isIdAvailable === true ? 'green' : isIdAvailable === false ? 'red' : 'gray' }}>
+                        ✔️
+                    </Text>
+                </TouchableOpacity>
+
+                {idValidationMessage && (
+                    <Text style={isIdAvailable ? styles.successText : styles.errorText}>
+                        {idValidationMessage}
+                    </Text>
+                )}
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        value={userPw}
+                        onChangeText={handlePasswordInput}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                        style={styles.eyeIcon}
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <Text>{showPassword ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                </View>
+
+
+                {capsLockOn && <Text style={styles.warningText}>Caps Lock이 켜져 있습니다.</Text>}
+                {numLockOn && <Text style={styles.warningText}>Num Lock이 켜져 있습니다.</Text>}
+                <View style={styles.passwordRules}>
+                    <Text style={[styles.ruleText, passwordRules.length ? styles.valid : styles.invalid]}>
+                        • 최소 8자 이상
+                    </Text>
+                    <Text style={[styles.ruleText, passwordRules.letter ? styles.valid : styles.invalid]}>
+                        • 대소문자 중 하나 포함
+                    </Text>
+                    <Text style={[styles.ruleText, passwordRules.number ? styles.valid : styles.invalid]}>
+                        • 숫자 1자 이상
+                    </Text>
+                    <Text style={[styles.ruleText, passwordRules.specialChar ? styles.valid : styles.invalid]}>
+                        • 특수문자 1자 이상
+                    </Text>
+                </View>
                 <TextInput
                     style={styles.input}
-                    placeholder="Password"
-                    value={userPw}
-                    onChangeText={handlePasswordInput}
-                    secureTextEntry={!showPassword}
+                    placeholder="전화번호 (숫자만 입력)"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="numeric"
                 />
-                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
-                    <Text>{showPassword ? '🙈' : '👁️'}</Text>
-                </TouchableOpacity>
-                {capsLockOn && (
-                    <Text style={styles.warningText}>Caps Lock is on</Text>
-                )}
-                {numLockOn && (
-                    <Text style={styles.warningText}>Num Lock is on</Text>
-                )}
                 <TextInput
                     style={styles.input}
                     placeholder="Email"
@@ -110,126 +203,22 @@ const SignUpScreen = () => {
                         value={nickname}
                         editable={false}
                     />
-                    <TouchableOpacity style={styles.nicknameRefreshButton} onPress={() => setNickname(generateRandomNickname())}>
+                    <TouchableOpacity
+                        style={styles.nicknameRefreshButton}
+                        onPress={() => setNickname(generateRandomNickname())}
+                    >
                         <Text style={styles.nicknameRefreshText}>🔄</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            <CustomButton title="회원가입" onPress={handleSignUp} />
+            <CustomButton
+                title="회원가입"
+                onPress={handleSignUp}
+                disabled={!idChecked || !isIdAvailable || !Object.values(passwordRules).every((rule) => rule)}
+            />
             {responseMessage && <Text style={styles.responseMessage}>{responseMessage}</Text>}
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginLink}>
-                <Text style={styles.loginText}>이미 계정이 있나요?{' '}
-                    <Text style={styles.loginTextUnderLine}>로그인</Text>
-                </Text>
-            </TouchableOpacity>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f5f5',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-    },
-    birthContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 18,
-        color: '#666666',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 20,
-    },
-    inputContainer: {
-        width: '90%',
-        marginBottom: 20,
-        position: 'relative',
-    },
-    input: {
-        backgroundColor: '#ffffff',
-        padding: 15,
-        borderRadius: 10,
-        borderColor: '#ddd',
-        borderWidth: 1,
-        marginBottom: 10,
-    },
-    nicknameContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    nicknameInput: {
-        flex: 1,
-    },
-    nicknameRefreshButton: {
-        marginLeft: 10,
-    },
-    nicknameRefreshText: {
-        fontSize: 20,
-    },
-    eyeIcon: {
-        position: 'absolute',
-        right: 15,
-        top: 90,
-    },
-    warningText: {
-        color: 'orange',
-        fontSize: 14,
-        marginBottom: 5,
-    },
-    responseMessage: {
-        color: 'red',
-        marginBottom: 10,
-    },
-    loginLink: {
-        marginTop: 15,
-    },
-    loginText: {
-        color: '#666666',
-        fontSize: 16,
-    },
-    loginTextUnderLine: {
-        color: '#007BFF',
-        fontSize: 16,
-    },
-    submitButton: {
-        backgroundColor: '#808080',
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    submitButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-});
 
 export default SignUpScreen;

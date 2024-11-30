@@ -69,7 +69,6 @@ const LoginScreen = () => {
             <View style={styles.logoContainer}>
                 <Image source={require('../assets/logo.png')} style={styles.logo} />
                 <Text style={styles.subtitle}>당신의 소중한 반려견을 찾아드리는{`\n`}
-                    <Text style={styles.highlightedText}>'추견 60분'</Text>
                 </Text>
             </View>
 
