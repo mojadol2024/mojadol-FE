@@ -5,13 +5,14 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import { generateRandomNickname } from '../utils/randomNick';
 
-
+// 전화번호 받는 부분 미 구현 / 
 const SignUpScreen = () => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
     const [email, setEmail] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
     const [nickname, setNickname] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [loading, setLoading] = useState(true); // 로딩 상태 추가
     const [showPassword, setShowPassword] = useState(false); // 비밀번호 보이기/숨기기 추가
     const [capsLockOn, setCapsLockOn] = useState(false); // Caps Lock 상태
@@ -36,15 +37,21 @@ const SignUpScreen = () => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/auth/signup`, {
+            const response = await axios.post(`${API_URL}/auth/addUser`, {
                 userId: userId,
                 userPw: userPw,
-                email: email,
-                nickname: nickname, // 자동 생성된 닉네임 추가
+                mail: email,
+                nickName: nickname,
+                phoneNumber : phoneNumber
             });
-            setResponseMessage(`Sign-up successful: ${response.data.message}`);
-            console.log('Navigating to login');
-            navigation.navigate('Login');
+            if (response.data === "YES") {
+                setResponseMessage(`Sign-up successful: ${response.data.message}`);
+                console.log('Navigating to login');
+                navigation.navigate('Login');
+            } else {
+                Alert.alert('Error', 'Sign-up failed: User ID already exists');
+            }
+            
         } catch (error) {
             if (error.response) {
                 setResponseMessage(`Sign-up failed: ${error.response.data.error}`);
@@ -53,6 +60,17 @@ const SignUpScreen = () => {
             }
         }
         Alert.alert('Success', '회원가입이 완료되었습니다.');
+    };
+
+    const handleIdCheck = async () => {
+        const response = await axios.post(`${API_URL}/auth/checkId`, {
+            userId: userId
+        });
+        if (response.data === "YES") {
+            Alert.alert('Success', 'ID available');
+        } else {
+            Alert.alert('Error', 'ID already exists');
+        }
     };
 
     const handlePasswordInput = (text) => {
