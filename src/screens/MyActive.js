@@ -4,6 +4,7 @@ import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, A
 import { API_URL } from '@env';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const MyActivityScreen = () => {
@@ -23,15 +24,30 @@ const MyActivityScreen = () => {
     mail: ''
   });
 
+  const [page, setPage] = useState(0); // 페이지 관리
+  const [pageData, setPageData] = useState(false);
+  const navigation = useNavigation();
+
   // 내가 쓴 글 가져오기
-  const fetchMyPosts = async () => {
+  const fetchMyPosts = async (page) => {
     try {
+      console.log(`${API_URL}/myActivity/myBoardList?${page}`)
+      const accessToken = await AsyncStorage.getItem('accessToken');
       setLoading(true);
-      const response = await axios.get(`${API_URL}/myPosts`);
-      setMyPosts(response.data);
+      const response = await axios.get(`${API_URL}/myActivity/myBoardList?${page}`, {
+        headers: {
+          Authorization: accessToken,
+        },
+      });
+      const data = response.data;
+      // 새로운 데이터를 기존 데이터와 합쳐서 상태 업데이트
+      setMyPosts((prevData) => [...prevData, ...data.content]);
+      setPageData(data.pagination)
+      console.log(pageData);
+      setLoading(false);
+      console.log(data.content.map(item => item.photo));
     } catch (error) {
       console.error('내가 쓴 글 가져오기 실패:', error);
-      Alert.alert('내가 쓴 글을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -48,6 +64,12 @@ const MyActivityScreen = () => {
       Alert.alert('내가 쓴 댓글을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
+    }
+  };
+  //page 증가
+  const handleLoadMore = () => {
+    if (!loading) {
+      setPage((prevPage) => prevPage + 1);  // 페이지 증가
     }
   };
 
@@ -88,11 +110,32 @@ const MyActivityScreen = () => {
   // 탭에 따라 데이터를 가져오기
   useEffect(() => {
     if (activeTab === 'posts') {
-      fetchMyPosts();
+      fetchMyPosts(page);
     } else if (activeTab === 'comments') {
       fetchMyComments();
     }
-  }, [activeTab]);
+  }, [activeTab, page]);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.viewButton}
+        onPress={() => navigation.navigate('BoardDetail', { boardSeq: item.boardSeq })}  // BoardDetail로 이동
+      >
+      <View style={styles.imageContainer}>
+        <Image 
+          source={{ uri: item.photo }} 
+          style={styles.image}
+          onError={(e) => console.log('Image load error', e.nativeEvent.error)}  // 오류 로깅
+        />
+        <Text style={styles.statusOverlay}>{item.report}</Text>
+      </View>
+      <Text style={styles.breed}>{item.breedName}</Text>
+      <Text>발견장소: {item.location}</Text> 
+      <Text>실종날짜: {item.lostDate}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   // 탭에 따라 컨텐츠 렌더링
   const renderContent = () => {
@@ -108,13 +151,14 @@ const MyActivityScreen = () => {
       return (
         <FlatList
           data={myPosts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Image source={{ uri: item.imageUrl }} style={styles.image} />
-              <Text style={styles.titleText}>{item.title}</Text>
-            </View>
-          )}
+          renderItem={renderItem}
+          keyExtractor={(item) => `${item.boardSeq}`}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.contentContainer}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          initialNumToRender={pageData.pageSize}
         />
       );
     } else if (activeTab === 'comments') {
@@ -125,12 +169,14 @@ const MyActivityScreen = () => {
       return (
         <FlatList
           data={myComments}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Text>{item.comment}</Text>
-            </View>
-          )}
+          renderItem={renderItem}
+          keyExtractor={(item) => `${item.boardSeq}`}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.contentContainer}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          initialNumToRender={pageData.pageSize}
         />
       );
     } else if (activeTab === 'passwordCheck') {
