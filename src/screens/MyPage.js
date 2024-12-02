@@ -32,6 +32,22 @@ export default function MyPageScreen() {
 
   });
 
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    try {
+      // AsyncStorage에서 accessToken 제거
+      await AsyncStorage.removeItem('accessToken');
+      // 로그인 화면으로 네비게이션
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LoginScreen' }],
+      });
+    } catch (error) {
+      console.error('로그아웃 실패', error);
+      Alert.alert('Error', '로그아웃 중 오류가 발생했습니다.');
+    }
+  };
+
   const handlePasswordCheck = async () => {
     try {
         const accessToken = await AsyncStorage.getItem('accessToken');
@@ -141,6 +157,12 @@ export default function MyPageScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem}>
           <Text style={styles.menuItemText}>추천 60분 후원하기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ForgetAccount')}>
+          <Text style={styles.menuItemText}>아이디 · 비밀번호 찾기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <Text style={styles.menuItemText}>로그아웃</Text>
         </TouchableOpacity>
       </View>
     </View>
