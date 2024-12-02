@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center',
@@ -85,6 +85,37 @@ const styles = StyleSheet.create({
     responseMessage: {
         color: 'red',
         marginBottom: 10,
+    },
+    idRulesContainer: {
+        marginBottom: 10,
+    },
+    idRuleText: {
+        fontSize: 14,
+    },
+    valid: {
+        color: 'green',
+    },
+    invalid: {
+        color: 'gray',
+    },
+    // "이용 약관 동의" 버튼 스타일 추가
+    termsButton: {
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+        alignSelf: 'center',
+        backgroundColor: '#CCCCCC', // 기본 색상
+    },
+    termsButtonActive: {
+        backgroundColor: '#4989E8', // 이용 약관 동의 후 색상
+    },
+    termsButtonInactive: {
+        backgroundColor: '#CCCCCC', // 이용 약관 미동의 시 색상
+    },
+    termsButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        textAlign: 'center',
     },
 });
 
