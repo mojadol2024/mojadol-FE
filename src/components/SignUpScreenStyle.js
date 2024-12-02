@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center',
@@ -85,6 +85,18 @@ const styles = StyleSheet.create({
     responseMessage: {
         color: 'red',
         marginBottom: 10,
+    },
+    idRulesContainer: {
+        marginBottom: 10,
+    },
+    idRuleText: {
+        fontSize: 14,
+    },
+    valid: {
+        color: 'green',
+    },
+    invalid: {
+        color: 'gray',
     },
 });
 
