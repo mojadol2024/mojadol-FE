@@ -38,6 +38,7 @@ const Board = () => {
 
   // 데이터 로딩 함수
   const loadBoardData = async (page) => {
+    if (loading) return;
     try {
       setLoading(true);
       const accessToken = await AsyncStorage.getItem('accessToken');
@@ -52,7 +53,6 @@ const Board = () => {
       // 새로운 데이터를 기존 데이터와 합쳐서 상태 업데이트
       setBoardData((prevData) => [...prevData, ...data.content]);
       setPageData(data.pagination)
-      console.log(pageData);
       setLoading(false);
       console.log(data.content.map(item => item.photo));
     } catch (error) {
@@ -121,9 +121,8 @@ const Board = () => {
 
   // 스크롤 끝에 도달했을 때 호출되는 함수
   const handleLoadMore = () => {
-    if (!loading) {
-      setPage((prevPage) => prevPage + 1);  // 페이지 증가
-    }
+    if (loading || (pageData && page >= pageData.totalPages)) return;
+    setPage((prevPage) => prevPage + 1);
   };
 
   const handleLocationPress = (locationName) => {

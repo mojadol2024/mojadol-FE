@@ -18,6 +18,8 @@ import Terms1 from '../screens/Terms1'; // 서비스 이용 약관 화면
 import Terms2 from '../screens/Terms2'; // 개인정보 처리방침 화면
 import Terms3 from '../screens/Terms3'; // 개인정보 수집 및 이용 동의 화면
 import Terms4 from '../screens/Terms4'; // 개인정보 제3자 제공 동의 화면
+import EditProfileScreen from '../screens/EditProfileScreen';
+
 const Stack = createStackNavigator();
 
 const LoginNavigator = () => {
@@ -35,6 +37,7 @@ const LoginNavigator = () => {
       <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
       <Stack.Screen name="MyPage" component={MyPage} />
       <Stack.Screen name="MyActive" component={MyActive} />
+      <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
       <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
       <Stack.Screen name="TermsAgreement" component={TermsAgreement} /> {/* TermsAgreement 추가 */}
       <Stack.Screen name="Terms1" component={Terms1} /> {/* 서비스 이용 약관 */}
