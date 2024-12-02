@@ -81,12 +81,6 @@ const Board = () => {
         const fcmToken = await getFCMToken();
         if (fcmToken) {
           console.log('FCM Token:', fcmToken);
-
-          // 사용자 ID 예시 (서버로 전송할 실제 사용자 ID로 대체)
-          const userId = 'example_user_id'; // 백엔드에서 필요로 하는 사용자 ID
-
-          // 4. FCM 토큰 서버에 저장
-          await saveTokenToServer(fcmToken, userId);
         } else {
           console.warn('FCM token is null');
         }

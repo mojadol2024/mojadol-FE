@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-export default function MyPageScreen({ navigation }) {
+export default function MyPageScreen() {
   // 닉네임 상태 생성
   const [nickname, setNickname] = useState('닉네임ㅇㅇ1');
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -16,7 +18,7 @@ export default function MyPageScreen({ navigation }) {
         <Text style={styles.menuTitle}>마이메뉴</Text>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('MyActivity')}
+          onPress={() => navigation.navigate('MyActive')}
         >
           <Text style={styles.menuItemText}>나의 활동</Text>
         </TouchableOpacity>
