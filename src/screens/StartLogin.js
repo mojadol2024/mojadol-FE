@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
+import styles from '../components/StartLoginStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
 
