@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
 import CustomButton from '../components/CustomButton';
 import styles from '../components/SignUpScreenStyle';
 import axios from 'axios';
@@ -28,7 +28,6 @@ const SignUpScreen = () => {
         number: false,
         specialChar: false,
     });
-    const [termsAgreed, setTermsAgreed] = useState(false);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -42,7 +41,7 @@ const SignUpScreen = () => {
     const validatePassword = (password) => {
         const rules = {
             length: password.length >= 8,
-            letter: /[a-zA-Z]/.test(password),
+            letter: /[a-zA-Z]/.test(password), // 대소문자 중 하나 포함
             number: /\d/.test(password),
             specialChar: /[@$!%*?&]/.test(password),
         };
@@ -53,8 +52,8 @@ const SignUpScreen = () => {
     const handlePasswordInput = (text) => {
         setUserPw(text);
         validatePassword(text);
-        setCapsLockOn(/[A-Z]/.test(text) && !/[a-z]/.test(text));
-        setNumLockOn(/\d/.test(text));
+        setCapsLockOn(/[A-Z]/.test(text) && !/[a-z]/.test(text)); // Caps Lock 상태 감지
+        setNumLockOn(/\d/.test(text)); // Num Lock 상태 감지
     };
 
     const handleCheckId = async () => {
@@ -66,9 +65,11 @@ const SignUpScreen = () => {
         }
 
         try {
+            console.log(`${API_URL}/auth/checkId`)
             const response = await axios.post(`${API_URL}/auth/checkId`, {
-                userId: userId,
+                 userId : userId
             });
+            console.log(response.data);
             if (response.data === 'YES') {
                 setIdValidationMessage('사용 가능한 아이디입니다.');
                 setIsIdAvailable(true);
@@ -85,10 +86,6 @@ const SignUpScreen = () => {
     const handleSignUp = async () => {
         if (!idChecked) {
             Alert.alert('Error', '아이디를 체크하세요.');
-            return;
-        }
-        if (!termsAgreed) {
-            Alert.alert('Error', '이용약관에 동의해주세요.');
             return;
         }
         if (!validatePassword(userPw)) {
@@ -113,11 +110,12 @@ const SignUpScreen = () => {
                 userPw: userPw,
                 mail: email,
                 nickName: nickname,
-                userName: userName,
+                userName : userName,
                 phoneNumber: phoneNumber,
             });
             if (response.data === 'YES') {
                 setResponseMessage(`Sign-up successful: ${response.data.message}`);
+                console.log('Navigating to login');
                 navigation.navigate('StartLogin');
             } else {
                 Alert.alert('Error', 'Sign-up failed: User ID already exists');
@@ -138,7 +136,7 @@ const SignUpScreen = () => {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.container}>
             <Text style={styles.title}>회원가입</Text>
             <Text style={styles.subtitle}>프로필을 설정해주세요</Text>
             <View style={styles.inputContainer}>
@@ -157,6 +155,7 @@ const SignUpScreen = () => {
                         ✔️
                     </Text>
                 </TouchableOpacity>
+
                 {idValidationMessage && (
                     <Text style={isIdAvailable ? styles.successText : styles.errorText}>
                         {idValidationMessage}
@@ -177,6 +176,7 @@ const SignUpScreen = () => {
                         <Text>{showPassword ? '🙈' : '👁️'}</Text>
                     </TouchableOpacity>
                 </View>
+
                 {capsLockOn && <Text style={styles.warningText}>Caps Lock이 켜져 있습니다.</Text>}
                 {numLockOn && <Text style={styles.warningText}>Num Lock이 켜져 있습니다.</Text>}
                 <View style={styles.passwordRules}>
@@ -227,21 +227,13 @@ const SignUpScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <TouchableOpacity
-                style={[styles.termsButton, termsAgreed ? styles.termsButtonActive : styles.termsButtonInactive]}
-                onPress={() => setTermsAgreed(!termsAgreed)}
-            >
-                <Text style={styles.termsButtonText}>
-                    {termsAgreed ? '✔️ 이용약관 동의 완료' : '☐ 이용약관 동의하기'}
-                </Text>
-            </TouchableOpacity>
             <CustomButton
                 title="회원가입"
                 onPress={handleSignUp}
                 disabled={!idChecked || !isIdAvailable || !Object.values(passwordRules).every((rule) => rule)}
             />
             {responseMessage && <Text style={styles.responseMessage}>{responseMessage}</Text>}
-        </ScrollView>
+        </View>
     );
 };
 
