@@ -5,10 +5,12 @@ import styles from '../components/SignUpScreenStyle';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { generateRandomNickname } from '../utils/randomNick';
+import { useNavigation } from '@react-navigation/native';
 
 const SignUpScreen = () => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
+    const [userName, setUserName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [nickname, setNickname] = useState('');
@@ -22,6 +24,7 @@ const SignUpScreen = () => {
     // 아이디 및 이메일 체크 상태
     const [isIdAvailable, setIsIdAvailable] = useState(null);
     const [idChecked, setIdChecked] = useState(false);
+    const [idValidationMessage, setIdValidationMessage] = useState('');
     const [idRules, setIdRules] = useState({
         length: false,
         hasLetter: false,
@@ -30,13 +33,15 @@ const SignUpScreen = () => {
 
     const [isEmailAvailable, setIsEmailAvailable] = useState(null);
     const [emailChecked, setEmailChecked] = useState(false);
-
+  
     const [passwordRules, setPasswordRules] = useState({
         length: false,
         letter: false,
         number: false,
         specialChar: false,
     });
+
+    const navigation = useNavigation();
 
     useEffect(() => {
         const randomNickname = generateRandomNickname();
@@ -58,20 +63,24 @@ const SignUpScreen = () => {
     const handleCheckId = async () => {
         if (!validateId(userId)) {
             Alert.alert('Error', '아이디는 6자 이상, 영어와 숫자를 포함해야 합니다.');
+
             return;
         }
 
         try {
-            const response = await axios.get(`${API_URL}/auth/check-id`, { params: { userId } });
+            const response = await axios.get(`${API_URL}/auth/checkId`, { userId : userId });
             if (response.data === 'YES') {
+                setIdValidationMessage('사용 가능한 아이디입니다.');
                 setIsIdAvailable(true);
                 setIdChecked(true);
+
             } else {
                 setIsIdAvailable(false);
                 Alert.alert('Error', '중복된 아이디입니다.');
             }
         } catch (error) {
             Alert.alert('Error', '아이디 확인 중 오류가 발생했습니다.');
+            setIsIdAvailable(false);
         }
     };
 
@@ -85,7 +94,7 @@ const SignUpScreen = () => {
         }
 
         try {
-            const response = await axios.get(`${API_URL}/auth/check-email`, { params: { email } });
+            const response = await axios.get(`${API_URL}/auth/checkMail`, { email : email } });
             if (response.data === 'YES') {
                 setIsEmailAvailable(true);
                 setEmailChecked(true);
@@ -153,6 +162,7 @@ const SignUpScreen = () => {
     };
 
     // 로딩 상태
+
     if (loading) {
         return (
             <View style={styles.container}>

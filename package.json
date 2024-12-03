@@ -26,6 +26,7 @@
     "react-native": "0.75.3",
     "react-native-base64": "^0.2.1",
     "react-native-bootpay-api": "^13.8.42",
+    "react-native-config": "^1.5.3",
     "react-native-device-info": "^14.0.1",
     "react-native-dotenv": "^3.4.11",
     "react-native-fs": "^2.20.0",

@@ -1,28 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_URL } from '@env';
 
 const EditProfileScreen = () => {
-    // 초기 사용자 데이터 (더미 데이터)
-    const initialUserData = {
-        id: 'id1234',
-        nickname: '닉네임1',
-        email: '234@example.com',
-        password: 'pw1234',
-    };
+    const [nickName, setNickname] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [userId, setUserId] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
 
-    // 상태 관리
-    const [userData, setUserData] = useState(initialUserData); // 수정 가능한 데이터
-    const [tempData, setTempData] = useState(initialUserData); // 임시 데이터 (취소 시 복원)
+    useEffect(() => {
+        const getProfile = async () => {
+            try {
+            const accessToken = await AsyncStorage.getItem('accessToken'); 
+            const response = await axios.get(`${API_URL}/myActivity/userData`, {
+                headers: {
+                Authorization: accessToken,
+                },
+            });
+            const data = response.data;
+            setUserId(data.userId);
+            setEmail(data.mail);
+            setNickname(data.nickName);
+            setPhoneNumber(data.phoneNumber);
+            } catch (error) {
+            console.error('내 정보 가져오기 실패', error);
+            }
+        };
+        getProfile();
+    });
 
-    // 저장 버튼 클릭
+    // 여기서 /auth/checkMail api호출
+
+    // 저장 여기서 /myActivity/updateUser api호출
     const handleSave = () => {
-        setUserData(tempData); // 수정된 데이터를 저장
         Alert.alert('Success', '수정된 정보가 저장되었습니다.');
     };
 
     // 취소 버튼 클릭
     const handleCancel = () => {
-        setTempData(userData); // 변경 사항 취소
         Alert.alert('Cancelled', '수정이 취소되었습니다.');
     };
 
@@ -34,23 +52,23 @@ const EditProfileScreen = () => {
             <Text style={styles.label}>닉네임</Text>
             <TextInput
                 style={styles.input}
-                value={tempData.nickname}
-                onChangeText={(text) => setTempData({ ...tempData, nickname: text })}
+                value={nickName}
+                onChangeText={setNickname}
             />
 
             {/* 이메일 입력 */}
             <Text style={styles.label}>이메일</Text>
             <TextInput
                 style={styles.input}
-                value={tempData.email}
-                onChangeText={(text) => setTempData({ ...tempData, email: text })}
+                value={email}
+                onChangeText={setEmail}
             />
 
             {/* 아이디 (수정 불가) */}
             <Text style={styles.label}>아이디</Text>
             <TextInput
                 style={[styles.input, styles.disabledInput]}
-                value={tempData.id}
+                value={userId}
                 editable={false}
             />
 
@@ -58,9 +76,18 @@ const EditProfileScreen = () => {
             <Text style={styles.label}>비밀번호</Text>
             <TextInput
                 style={styles.input}
-                value={tempData.password}
-                onChangeText={(text) => setTempData({ ...tempData, password: text })}
+                value={password}
+                onChangeText={setPassword}
                 secureTextEntry={true}
+            />
+
+            {/* 전화번호 입력 */}
+            <Text style={styles.label}>전화번호</Text>
+            <TextInput
+                style={styles.input}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
             />
 
             {/* 버튼들 */}

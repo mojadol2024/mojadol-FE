@@ -12,6 +12,8 @@ import SplashScreen from '../screens/SplashScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import StartLogin from '../screens/StartLogin';
 import ForgetAccount from '../screens/ForgetAccount';
+import MyActive from '../screens/MyActive';
+import EditProfileScreen from '../screens/EditProfileScreen';
 const Stack = createStackNavigator();
 
 const LoginNavigator = () => {
@@ -28,6 +30,8 @@ const LoginNavigator = () => {
       <Stack.Screen name="DogRegistration" component={DogRegistration} />
       <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
       <Stack.Screen name="MyPage" component={MyPage} />
+      <Stack.Screen name="MyActive" component={MyActive} />
+      <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
       <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
     </Stack.Navigator>
   );
