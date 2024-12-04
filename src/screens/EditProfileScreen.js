@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from '@env';
+import { useNavigation } from '@react-navigation/native';
 
 const EditProfileScreen = () => {
+    const navigation = useNavigation(); // 네비게이션 객체 가져오기
+    const [userName, setUserName] = useState('');
     const [nickName, setNickname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,6 +19,8 @@ const EditProfileScreen = () => {
     const [emailError, setEmailError] = useState(''); // 이메일 유효성 오류 메시지
     const [passwordError, setPasswordError] = useState(''); // 비밀번호 유효성 오류 메시지
     const [phoneNumberError, setPhoneNumberError] = useState(''); // 전화번호 유효성 오류 메시지
+    const [nickNameError, setNickNameError] = useState('');
+    const [isEmailChecked, setIsEmailChecked] = useState(false); // 이메일 중복 확인 했는지 확인
     const [loading, setLoading] = useState(true);
 
     // 사용자 프로필 정보 가져오기
@@ -27,6 +32,7 @@ const EditProfileScreen = () => {
                     headers: { Authorization: accessToken },
                 });
                 const data = response.data;
+                setUserName(data.userName);
                 setUserId(data.userId);
                 setEmail(data.mail);
                 setNickname(data.nickName);
@@ -55,23 +61,24 @@ const EditProfileScreen = () => {
 
     // 비밀번호 유효성 검사
     const validatePassword = (password) => {
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordPattern = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordPattern.test(password)) {
-            setPasswordError('비밀번호는 최소 8자 이상이며, 대소문자 중 하나, 숫자, 특수문자를 포함해야 합니다.');
+            setPasswordError('비밀번호는 최소 8자 이상이며, 대문자 또는 소문자 중 하나, 숫자, 특수문자를 포함해야 합니다.');
         } else {
-            setPasswordError('');
+            setPasswordError(''); 
+        }
+    };
+    
+    // 닉네임 유효성 검사
+    const validateNickname = (nickname) => {
+        const nicknamePattern = /^(?!\d+$)(?!.*\s)([a-zA-Z가-힣0-9]{2,})$/;
+        if (!nicknamePattern.test(nickname)) {
+            setNickNameError('닉네임은 2자 이상, 숫자, 영어, 한글만 가능합니다.');
+        } else {
+            setNickNameError('');
         }
     };
 
-    // 전화번호 유효성 검사
-    const validatePhoneNumber = (phoneNumber) => {
-        const phonePattern = /^[0-9]{10,11}$/;
-        if (!phonePattern.test(phoneNumber)) {
-            setPhoneNumberError('전화번호는 10~11자리 숫자만 가능합니다.');
-        } else {
-            setPhoneNumberError('');
-        }
-    };
 
     // 이메일 중복 확인
     const checkEmailDuplicate = async () => {
@@ -83,6 +90,7 @@ const EditProfileScreen = () => {
                 Alert.alert('중복 확인', '이미 사용 중인 이메일입니다.');
             } else {
                 setIsEmailAvailable(true);
+                setIsEmailChecked(true); // 이메일 중복 확인 완료
                 Alert.alert('중복 확인', '사용 가능한 이메일입니다.');
             }
         } catch (error) {
@@ -108,13 +116,21 @@ const EditProfileScreen = () => {
             Alert.alert('Error', '입력한 정보를 확인하세요.');
             return;
         }
+
+        if (email !== initialData.email && !isEmailChecked) {
+            Alert.alert('Error', '이메일 중복 확인을 해주세요.');
+            return;
+        }
     
         try {
             const accessToken = await AsyncStorage.getItem('accessToken');
             await axios.put(`${API_URL}/myActivity/updateUser`, updatedFields, {
                 headers: { Authorization: accessToken },
             });
-            Alert.alert('Success', '수정된 정보가 저장되었습니다.');
+            Alert.alert('Success', '수정된 정보가 저장되었습니다.',
+                [
+                    { text: 'OK', onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
+                ]);
         } catch (error) {
             console.error('정보 수정 실패', error);
             Alert.alert('Error', '정보 수정 중 오류가 발생했습니다.');
@@ -125,104 +141,121 @@ const EditProfileScreen = () => {
     const handleCancel = () => {
         setNickname(initialData.nickName);
         setEmail(initialData.email);
-        setPhoneNumber(initialData.phoneNumber);
         setPassword('');
-        Alert.alert('알림', '수정이 취소되었습니다.');
+        Alert.alert('알림', '수정이 취소되었습니다.',
+            [
+                { text: 'OK', onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
+            ]);
         }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>회원 정보 수정</Text>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+                <Text style={styles.title}>회원 정보 수정</Text>
 
-            {/* 닉네임 입력 */}
-            <Text style={styles.label}>닉네임</Text>
-            <TextInput
-                style={styles.input}
-                value={nickName}
-                onChangeText={setNickname}
-            />
+                {/* 이름 */}
+                <Text style={styles.label}>이름</Text>
+                <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={userName}
+                    editable={false}
+                />
 
-            {/* 이메일 입력 */}
-            <Text style={styles.label}>이메일</Text>
-            <View style={styles.inputContainer}>
+                <Text style={styles.label}>전화번호</Text>
+                <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={phoneNumber}
+                    editable={false}
+                />
+
+                {/* 아이디 (수정 불가) */}
+                <Text style={styles.label}>아이디</Text>
+                <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={userId}
+                    editable={false}
+                />
+
+                {/* 비밀번호 입력 */}
+                <Text style={styles.label}>비밀번호</Text>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={[styles.input, { flex: 1 }]}
+                        value={password}
+                        onChangeText={(value) => {
+                            setPassword(value);
+                            validatePassword(value); // 유효성 검사 호출
+                        }}
+                        secureTextEntry={!isPasswordVisible}
+                    />
+                    <TouchableOpacity
+                        style={styles.checkIcon}
+                        onPress={() => setPasswordVisible(!isPasswordVisible)}
+                    >
+                        <Text>
+                            {isPasswordVisible ? '🙈' : '👁️'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+                {/* 닉네임 입력 */}
+                <Text style={styles.label}>닉네임</Text>
+                <TextInput
+                    style={styles.input}
+                    value={nickName}
+                    onChangeText={(value) => {
+                        setNickname(value);
+                        validateNickname(value); // 유효성 검사 호출
+                    }}
+                />
+                {nickNameError ? <Text style={styles.errorText}>{nickNameError}</Text> : null}
+
+                {/* 이메일 입력 */}
+                <Text style={styles.label}>이메일</Text>
+                <View style={styles.inputContainer}>
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
                     value={email}
                     onChangeText={(value) => {
-                        setEmail(value);  // 이메일 상태 업데이트
-                        setIsEmailAvailable(null);  // 이메일 변경 시 중복 확인 상태 초기화
-                        validateEmail(value);  // 이메일 유효성 검사
+                    setEmail(value);  // 이메일 상태 업데이트
+                    setIsEmailAvailable(null);  // 이메일 변경 시 중복 확인 상태 초기화
+                    setIsEmailChecked(false); // 이메일 변경 시 중복 확인 상태 초기화
+                    validateEmail(value);  // 이메일 유효성 검사
                     }}
                 />
                 <TouchableOpacity
-                    style={styles.checkIcon}
+                    style={[styles.checkIcon, { justifyContent: 'center', alignItems: 'center' }]} // 체크 아이콘 중앙 정렬
                     onPress={checkEmailDuplicate}
                 >
-                    <Text style={{color: isEmailAvailable === true ? 'green' : isEmailAvailable === false ? 'red' : 'gray'}}>
+                    <Text style={{ color: isEmailAvailable === true ? 'green' : isEmailAvailable === false ? 'red' : 'gray'}}>
                         ✔️
                     </Text>
                 </TouchableOpacity>
+                </View>
+                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
+                {/* 버튼들 */}
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                        <Text style={styles.buttonText}>수정된 정보 저장</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                        <Text style={styles.buttonText}>취소</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}          
-
-            {/* 아이디 (수정 불가) */}
-            <Text style={styles.label}>아이디</Text>
-            <TextInput
-                style={[styles.input, styles.disabledInput]}
-                value={userId}
-                editable={false}
-            />
-
-            {/* 비밀번호 입력 */}
-            <Text style={styles.label}>비밀번호</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={password}
-                    onChangeText={(value) => {
-                        setPassword(value);
-                        validatePassword(value);
-                    }}
-                    secureTextEntry={!isPasswordVisible}
-                />
-                <TouchableOpacity
-                    style={styles.checkIcon}
-                    onPress={() => setPasswordVisible(!isPasswordVisible)}
-                >
-                    <Text>
-                        {isPasswordVisible ? '🙈' : '👁️'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-
-            {/* 전화번호 입력 */}
-            <Text style={styles.label}>전화번호</Text>
-            <TextInput
-                style={styles.input}
-                value={phoneNumber}
-                onChangeText={(value) => {
-                    setPhoneNumber(value);
-                    validatePhoneNumber(value);
-                }}
-                keyboardType="phone-pad"
-            />
-            {phoneNumberError ? <Text style={styles.errorText}>{phoneNumberError}</Text> : null}
-
-            {/* 버튼들 */}
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                    <Text style={styles.buttonText}>수정된 정보 저장</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                    <Text style={styles.buttonText}>취소</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        flexGrow: 1, // ScrollView의 자식이 화면을 채우도록 설정
+        padding: 20,
+        backgroundColor: '#ffffff',
+    },
+    
     container: {
         flex: 1,
         padding: 20,
@@ -240,15 +273,19 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderColor: '#c78c30',
+        borderColor: '#cccccc',
         padding: 10,
         marginBottom: 20,
         borderRadius: 22.375,
         backgroundColor: '#fff',
+        shadowColor: '#000', // 그림자 색상
+        shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋을 더 크게 설정하여 입체감 증가
+        shadowOpacity: 0.5, // 그림자 투명도를 조금 더 높여서 더 강한 그림자 효과
+        shadowRadius: 5, // 그림자 확산 정도를 늘려서 더 부드럽고 넓은 그림자
+        elevation: 10, // Android 그림자 강도를 증가시켜 더 두드러진 그림자
     },
     disabledInput: {
-        backgroundColor: '#c78c30',
-        opacity: 0.7
+        backgroundColor: '#eaeaea',
     },
     buttonContainer: {
         marginTop: 30,
@@ -256,7 +293,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     saveButton: {
-        backgroundColor: '#c78c30',
+        backgroundColor: '#F1c0ba',
         padding: 15,
         borderRadius: 22.375,
         flex: 1,
@@ -278,12 +315,15 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-    },
+        position: 'relative', // 버튼을 입력 필드의 오른쪽에 고정시키기 위해 position 속성 추가
+    },    
     checkIcon: {
-        marginLeft: 10,
-        fontSize: 12,
-        marginBottom: 20,
+        position: 'absolute', // 버튼을 입력 필드 안에 배치하기 위해 absolute 위치 지정
+        right: 15,
+        bottom: 35,
+        fontSize: 18,
     },
+    
     errorText: {
         color: 'red',
         fontSize: 12,
