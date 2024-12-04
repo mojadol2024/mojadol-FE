@@ -11,6 +11,7 @@ export default function MyPageScreen() {
   const [password, setPassword] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false); // 모달 표시 여부
   const [loading, setLoading] = useState(false); // 로딩 상태
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -30,9 +31,17 @@ export default function MyPageScreen() {
     };
     fetchMyPosts()
 
-  });
+  }, []);
 
   const handlePasswordCheck = async () => {
+    if (loading) return; // 로딩 중일 경우 중복 실행 방지
+
+    if (!password.trim()) {
+      Alert.alert('Error', '비밀번호를 입력하세요.');
+      return;
+    }
+
+    setLoading(true); // 로딩 시작
     try {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const response = await axios.post(
@@ -48,14 +57,16 @@ export default function MyPageScreen() {
         );     
         if (response.data == "YES") {
           setIsModalVisible(false);
+          setPassword('');
           navigation.navigate('EditProfileScreen');
         } else {
-          setIsModalVisible(false);
           Alert.alert('Error', '비밀번호가 일치하지 않습니다.');
-        }
+        }    
     } catch (error) {
       console.error('비밀번호 확인 실패', error);
       Alert.alert('Error', '비밀번호 확인 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false); // 로딩 종료
     }
 };
 
@@ -89,33 +100,47 @@ export default function MyPageScreen() {
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>비밀번호 확인</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="비밀번호를 입력하세요"
-                secureTextEntry={true}
-              />
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handlePasswordCheck}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>확인</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>취소</Text>
-              </TouchableOpacity>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="비밀번호를 입력하세요"
+                  secureTextEntry={!isPasswordVisible}
+                />
+                <TouchableOpacity
+                    style={styles.checkIcon}
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                >
+                    <Text>
+                        {isPasswordVisible ? '🙈' : '👁️'}
+                    </Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handlePasswordCheck}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>{loading ? '확인 중...' : '확인'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {setIsModalVisible(false); setPassword('');}}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>취소</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('NotificationSettings')}
+          onPress={() => navigation.navigate('Alarm')}
         >
           <Text style={styles.menuItemText}>알림 설정</Text>
         </TouchableOpacity>
@@ -123,22 +148,19 @@ export default function MyPageScreen() {
         <Text style={styles.menuTitle}>정보</Text>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('Notice')}
+          onPress={() => navigation.navigate('NoticeScreen')}
         >
           <Text style={styles.menuItemText}>공지사항</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('Inquiry')}
+          onPress={() => navigation.navigate('InquiryList')}
         >
           <Text style={styles.menuItemText}>문의하기</Text>
         </TouchableOpacity>
 
         <Text style={styles.menuTitle}>기타</Text>
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>별점, 추천사 남기기</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Payment')}>
           <Text style={styles.menuItemText}>추천 60분 후원하기</Text>
         </TouchableOpacity>
@@ -174,10 +196,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginVertical: 10,
-    color: '#c78c30',
+    color: '#F1c0ba',
     paddingVertical: 10,
     borderBottomWidth: 3,
-    borderBottomColor: '#C78c30',
+    borderBottomColor: '#F1c0ba',
   },
   menuItem: {
     paddingVertical: 10,
@@ -208,28 +230,43 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#c78c30',
+    borderColor: '#F1c0ba',
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     borderRadius: 22.375,
     backgroundColor: '#fff',
     width: '100%',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  checkIcon: {
+      position: 'absolute',  
+      right: 15, 
+      bottom: 25, 
+      fontSize: 20, 
+  },
+  buttonContainer: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    width: '100%',
+    marginTop: 5,
+  },
   confirmButton: {
-    backgroundColor: '#c78c30',
+    backgroundColor: '#F1c0ba',
     padding: 15,
     borderRadius: 22.375,
     alignItems: 'center',
-    width: '100%',
+    width: '48%',
   },
   cancelButton: {
-    backgroundColor: '#c78c30',
-    opacity: 0.6,
+    backgroundColor: '#cccccc',
     padding: 15,
     borderRadius: 22.375,
     alignItems: 'center',
-    marginTop: 10,
-    width: '100%',
+    width: '48%',
   },
   buttonText: {
     color: '#fff',

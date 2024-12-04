@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-import {ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -26,6 +26,7 @@ const EditProfileScreen = () => {
     // 사용자 프로필 정보 가져오기
     useEffect(() => {
         const getProfile = async () => {
+            setLoading(true);
             try {
                 const accessToken = await AsyncStorage.getItem('accessToken');
                 const response = await axios.get(`${API_URL}/myActivity/userData`, {
@@ -44,6 +45,9 @@ const EditProfileScreen = () => {
                 });
             } catch (error) {
                 console.error('내 정보 가져오기 실패', error);
+                Alert.alert('Error', '정보를 가져오는데 실패했습니다.');
+            } finally {
+                setLoading(false);
             }
         };
         getProfile();
@@ -83,6 +87,7 @@ const EditProfileScreen = () => {
     // 이메일 중복 확인
     const checkEmailDuplicate = async () => {
         if (!email) return; // 이메일 입력이 없으면 중복 체크를 하지 않음
+        setLoading(true);
         try {
             const response = await axios.post(`${API_URL}/auth/checkMail`, { email });
             if (response.data.isDuplicate) {
@@ -95,6 +100,8 @@ const EditProfileScreen = () => {
             }
         } catch (error) {
             console.error('이메일 중복 확인 실패', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -122,6 +129,7 @@ const EditProfileScreen = () => {
             return;
         }
     
+        setLoading(true);
         try {
             const accessToken = await AsyncStorage.getItem('accessToken');
             await axios.put(`${API_URL}/myActivity/updateUser`, updatedFields, {
@@ -134,6 +142,8 @@ const EditProfileScreen = () => {
         } catch (error) {
             console.error('정보 수정 실패', error);
             Alert.alert('Error', '정보 수정 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -149,102 +159,117 @@ const EditProfileScreen = () => {
         }
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.container}>
-                <Text style={styles.title}>회원 정보 수정</Text>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>         
+            {loading ? (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#F1c0ba" />
+                <Text>로딩 중...</Text>
+            </View>
+            ) : (
+                <View style={styles.container}>
+                    <Text style={styles.title}>회원 정보 수정</Text>
 
-                {/* 이름 */}
-                <Text style={styles.label}>이름</Text>
-                <TextInput
-                    style={[styles.input, styles.disabledInput]}
-                    value={userName}
-                    editable={false}
-                />
+                    {/* 이름 */}
+                    <Text style={styles.label}>이름</Text>
+                    <TextInput
+                        style={[styles.input, styles.disabledInput]}
+                        value={userName}
+                        editable={false}
+                    />
 
-                <Text style={styles.label}>전화번호</Text>
-                <TextInput
-                    style={[styles.input, styles.disabledInput]}
-                    value={phoneNumber}
-                    editable={false}
-                />
+                    <Text style={styles.label}>전화번호</Text>
+                    <TextInput
+                        style={[styles.input, styles.disabledInput]}
+                        value={phoneNumber}
+                        editable={false}
+                    />
 
-                {/* 아이디 (수정 불가) */}
-                <Text style={styles.label}>아이디</Text>
-                <TextInput
-                    style={[styles.input, styles.disabledInput]}
-                    value={userId}
-                    editable={false}
-                />
+                    {/* 아이디 (수정 불가) */}
+                    <Text style={styles.label}>아이디</Text>
+                    <TextInput
+                        style={[styles.input, styles.disabledInput]}
+                        value={userId}
+                        editable={false}
+                    />
 
-                {/* 비밀번호 입력 */}
-                <Text style={styles.label}>비밀번호</Text>
-                <View style={styles.inputContainer}>
+                    {/* 비밀번호 입력 */}
+                    <Text style={styles.label}>비밀번호</Text>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={[styles.input, { flex: 1 }]}
+                            value={password}
+                            onChangeText={(value) => {
+                                setPassword(value);
+                                validatePassword(value); // 유효성 검사 호출
+                            }}
+                            secureTextEntry={!isPasswordVisible}
+                        />
+                        <TouchableOpacity
+                            style={styles.checkIcon}
+                            onPress={() => setPasswordVisible(!isPasswordVisible)}
+                        >
+                            <Text>
+                                {isPasswordVisible ? '🙈' : '👁️'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                    {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+                    {/* 닉네임 입력 */}
+                    <Text style={styles.label}>닉네임</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={nickName}
+                        onChangeText={(value) => {
+                            setNickname(value);
+                            validateNickname(value); // 유효성 검사 호출
+                        }}
+                    />
+                    {nickNameError ? <Text style={styles.errorText}>{nickNameError}</Text> : null}
+
+                    {/* 이메일 입력 */}
+                    <Text style={styles.label}>이메일</Text>
+                    <View style={styles.inputContainer}>
                     <TextInput
                         style={[styles.input, { flex: 1 }]}
-                        value={password}
+                        value={email}
                         onChangeText={(value) => {
-                            setPassword(value);
-                            validatePassword(value); // 유효성 검사 호출
+                        setEmail(value);  // 이메일 상태 업데이트
+                        setIsEmailAvailable(null);  // 이메일 변경 시 중복 확인 상태 초기화
+                        setIsEmailChecked(false); // 이메일 변경 시 중복 확인 상태 초기화
+                        validateEmail(value);  // 이메일 유효성 검사
                         }}
-                        secureTextEntry={!isPasswordVisible}
                     />
                     <TouchableOpacity
-                        style={styles.checkIcon}
-                        onPress={() => setPasswordVisible(!isPasswordVisible)}
+                        style={[styles.checkIcon, { justifyContent: 'center', alignItems: 'center' }]} // 체크 아이콘 중앙 정렬
+                        onPress={checkEmailDuplicate}
                     >
-                        <Text>
-                            {isPasswordVisible ? '🙈' : '👁️'}
+                        <Text style={{ color: isEmailAvailable === true ? 'green' : isEmailAvailable === false ? 'red' : 'gray'}}>
+                            ✔️
                         </Text>
                     </TouchableOpacity>
-                </View>
-                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                    </View>
+                    {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-                {/* 닉네임 입력 */}
-                <Text style={styles.label}>닉네임</Text>
-                <TextInput
-                    style={styles.input}
-                    value={nickName}
-                    onChangeText={(value) => {
-                        setNickname(value);
-                        validateNickname(value); // 유효성 검사 호출
-                    }}
-                />
-                {nickNameError ? <Text style={styles.errorText}>{nickNameError}</Text> : null}
-
-                {/* 이메일 입력 */}
-                <Text style={styles.label}>이메일</Text>
-                <View style={styles.inputContainer}>
-                <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={email}
-                    onChangeText={(value) => {
-                    setEmail(value);  // 이메일 상태 업데이트
-                    setIsEmailAvailable(null);  // 이메일 변경 시 중복 확인 상태 초기화
-                    setIsEmailChecked(false); // 이메일 변경 시 중복 확인 상태 초기화
-                    validateEmail(value);  // 이메일 유효성 검사
-                    }}
-                />
-                <TouchableOpacity
-                    style={[styles.checkIcon, { justifyContent: 'center', alignItems: 'center' }]} // 체크 아이콘 중앙 정렬
-                    onPress={checkEmailDuplicate}
-                >
-                    <Text style={{ color: isEmailAvailable === true ? 'green' : isEmailAvailable === false ? 'red' : 'gray'}}>
-                        ✔️
-                    </Text>
-                </TouchableOpacity>
+                    {/* 버튼들 */}
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity 
+                            style={[styles.saveButton, loading && { backgroundColor: '#cccccc' }]} 
+                            onPress={!loading ? handleSave : null} 
+                            disabled={loading} // 로딩 중이면 버튼 비활성화
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.buttonText}>수정된 정보 저장</Text>
+                            )}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                            <Text style={styles.buttonText}>취소</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-
-                {/* 버튼들 */}
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.buttonText}>수정된 정보 저장</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                        <Text style={styles.buttonText}>취소</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+            )}
         </ScrollView>
     );
 };
@@ -329,6 +354,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginBottom: 10,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+    },    
 });
 
 export default EditProfileScreen;
