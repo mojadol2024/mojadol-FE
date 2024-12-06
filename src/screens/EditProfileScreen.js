@@ -108,10 +108,9 @@ const EditProfileScreen = () => {
     // 수정된 정보 저장
     const handleSave = async () => {
         const updatedFields = {};
-        if (nickName !== initialData.nickName) updatedFields.nickName = nickName;
-        if (email !== initialData.email) updatedFields.email = email;
-        if (phoneNumber !== initialData.phoneNumber) updatedFields.phoneNumber = phoneNumber;
-        if (password) updatedFields.password = password;
+        if (nickName !== initialData.nickName) updatedFields.userNickName = nickName;
+        if (email !== initialData.email) updatedFields.userMail = email;
+        if (password && password !== '') updatedFields.userPw = password; //비밀번호가 변경되었을 때만 검증
     
         // 변경된 내용이 없는 경우 처리
         if (Object.keys(updatedFields).length === 0) {
@@ -119,7 +118,7 @@ const EditProfileScreen = () => {
             return;
         }
 
-        if (emailError || passwordError || phoneNumberError) {
+        if (emailError || passwordError) {
             Alert.alert('Error', '입력한 정보를 확인하세요.');
             return;
         }
@@ -132,13 +131,27 @@ const EditProfileScreen = () => {
         setLoading(true);
         try {
             const accessToken = await AsyncStorage.getItem('accessToken');
-            await axios.put(`${API_URL}/myActivity/updateUser`, updatedFields, {
-                headers: { Authorization: accessToken },
+
+            if (!accessToken) {
+                Alert.alert('Error', '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.');
+                navigation.navigate('LoginScreen');
+                return;
+            }
+
+            updatedFields.userId = userId;
+
+            const response = await axios.post(`${API_URL}/myActivity/updateUser`, updatedFields, {
+                headers: { Authorization: `Bearer ${accessToken}` },
             });
-            Alert.alert('Success', '수정된 정보가 저장되었습니다.',
-                [
-                    { text: 'OK', onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
-                ]);
+
+            if (response.data === 'YES') {
+                Alert.alert('Success', '수정된 정보가 저장되었습니다.',
+                    [
+                        {onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
+                    ]);
+            } else {
+                Alert.alert('Error', '정보 수정 중 오류가 발생했습니다.');
+            }
         } catch (error) {
             console.error('정보 수정 실패', error);
             Alert.alert('Error', '정보 수정 중 오류가 발생했습니다.');
@@ -154,7 +167,7 @@ const EditProfileScreen = () => {
         setPassword('');
         Alert.alert('알림', '수정이 취소되었습니다.',
             [
-                { text: 'OK', onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
+                {onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
             ]);
         }
 
