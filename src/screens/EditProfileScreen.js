@@ -140,9 +140,17 @@ const EditProfileScreen = () => {
 
             updatedFields.userId = userId;
 
-            const response = await axios.post(`${API_URL}/myActivity/updateUser`, updatedFields, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
+            const response = await axios.post(`${API_URL}/myActivity/updateUser`, 
+                {
+                    userId: updatedFields.userId,
+                    nickName: updatedFields.userNickName,
+                    mail: updatedFields.userMail,
+                    userPw: updatedFields.userPw,
+                }, 
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }
+            );
 
             if (response.data === 'YES') {
                 Alert.alert('Success', '수정된 정보가 저장되었습니다.',
