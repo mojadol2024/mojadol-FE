@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
     },
     title: {
         fontSize: 24,
@@ -26,13 +26,13 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
     },
     activeTab: {
-        borderColor: '#C78C30',
+        borderColor: '#F1c0ba',
     },
     tabText: {
         color: '#666',
     },
     activeTabText: {
-        color: '#C78C30',
+        color: '#F1c0ba',
         fontWeight: 'bold',
     },
     input: {
@@ -40,14 +40,19 @@ const styles = StyleSheet.create({
         padding: 15,
         borderWidth: 1,
         borderColor: '#ddd',
-        borderRadius: 10,
+        borderRadius: 22.375,
         marginBottom: 20,
         backgroundColor: '#fff',
+        shadowColor: '#000', // 그림자 색상
+        shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋
+        shadowOpacity: 0.5, // 그림자 투명도
+        shadowRadius: 5, // 그림자 확산 정도
+        elevation: 10, // Android 그림자 강도
     },
     button: {
-        backgroundColor: '#C78C30',
+        backgroundColor: '#F1c0ba',
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 22.375,
         width: '90%',
         alignItems: 'center',
     },
@@ -58,6 +63,7 @@ const styles = StyleSheet.create({
     },
     exitButton: {
         marginTop: 20,
+        marginBottom: 40,
     },
     exitButtonText: {
         color: '#666',
@@ -71,6 +77,29 @@ const styles = StyleSheet.create({
     },
     footerText: {
         color: '#999',
+        fontSize: 14,
+    },
+    buttonWrapper: {
+        width: '90%',
+        marginBottom: 15,
+    },
+    verificationButton: {
+        backgroundColor: '#F1c0ba',
+        padding: 15,
+        borderRadius: 22.375,
+        width: '100%',
+        alignItems: 'center',
+    },
+    resendButton: {
+        backgroundColor: '#F1c0ba',
+        padding: 15,
+        borderRadius: 22.375,
+        width: '100%',
+        alignItems: 'center',
+    },
+    countdownText: {
+        marginTop: 10,
+        color: '#333',
         fontSize: 14,
     },
 });

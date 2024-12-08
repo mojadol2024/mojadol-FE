@@ -8,16 +8,16 @@ import DogRegistration from '../screens/DogRegistration';
 import PaymentScreen from '../screens/Payment';
 import MyPage from '../screens/MyPage';
 import MissingDogRegistration from '../screens/MissingDogRegistration';
-import SplashScreen from '../screens/SplashScreen';
+
 import SignUpScreen from '../screens/SignUpScreen';
 import StartLogin from '../screens/StartLogin';
 import ForgetAccount from '../screens/ForgetAccount';
+import ResetPassword from '../screens/ResetPassword';
 const Stack = createStackNavigator();
 
 const LoginNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
       <Stack.Screen name="StartLogin" component={StartLogin} />
@@ -29,6 +29,7 @@ const LoginNavigator = () => {
       <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
       <Stack.Screen name="MyPage" component={MyPage} />
       <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
+      <Stack.Screen name="ResetPassword" component={ResetPassword} />
     </Stack.Navigator>
   );
 };

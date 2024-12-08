@@ -1,4 +1,3 @@
-// StartLogin.styles.js
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -6,7 +5,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        paddingHorizontal: 20,
+    },
+    contentWrapper: {
+        width: '100%',
+        alignItems: 'center',
     },
     title: {
         fontSize: 24,
@@ -16,38 +19,47 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         width: '90%',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     input: {
         backgroundColor: '#ffffff',
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 22.375,
         borderColor: '#ddd',
         borderWidth: 1,
         marginBottom: 10,
+        shadowColor: '#000', // 그림자 색상
+        shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋
+        shadowOpacity: 0.5, // 그림자 투명도
+        shadowRadius: 5, // 그림자 확산 정도
+        elevation: 10, // Android 그림자 강도
     },
     button: {
-        backgroundColor: '#C78C30',
+        backgroundColor: '#F1c0ba',
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 22.375,
         alignItems: 'center',
-        width: '90%', // 입력란과 동일한 크기
-        marginBottom: 10,
+        width: '90%',
+        marginBottom: 15,
     },
     buttonText: {
         color: '#ffffff',
         fontWeight: 'bold',
     },
     linkContainer: {
-        marginTop: 10,
+        marginTop: 5,
+        marginBottom: 10,
     },
     linkText: {
         color: '#007BFF',
         textDecorationLine: 'underline',
     },
+    footer: {
+        position: 'absolute',
+        bottom: 20,
+        alignSelf: 'center',
+    },
     footerText: {
-        position: 'absolute', // 화면 하단에 고정
-        bottom: 10, // 하단 여백
         color: '#888',
         fontSize: 14,
     },

@@ -67,8 +67,6 @@ const LoginScreen = () => {
             {/* 로고 및 설명 */}
             <View style={styles.logoContainer}>
                 <Image source={require('../assets/logo.png')} style={styles.logo} />
-                <Text style={styles.subtitle}>당신의 소중한 반려견을 찾아드리는{`\n`}
-                </Text>
             </View>
 
             {/* 시작하기 버튼 */}

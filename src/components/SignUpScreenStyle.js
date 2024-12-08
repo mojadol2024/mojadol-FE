@@ -4,7 +4,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffffff',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -27,10 +27,15 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: '#ffffff',
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 22.375,
         borderColor: '#ddd',
         borderWidth: 1,
         marginBottom: 10,
+        shadowColor: '#000', // 그림자 색상
+        shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋
+        shadowOpacity: 0.5, // 그림자 투명도
+        shadowRadius: 5, // 그림자 확산 정도
+        elevation: 10, // Android 그림자 강도
     },
     checkIcon: {
         position: 'absolute',
@@ -92,11 +97,8 @@ const styles = StyleSheet.create({
     idRuleText: {
         fontSize: 14,
     },
-    valid: {
-        color: 'green',
-    },
-    invalid: {
-        color: 'gray',
+    emailRulesContainer: {
+        marginBottom: 10,
     },
 });
 
