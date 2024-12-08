@@ -11,6 +11,7 @@ import { requestNotificationPermission,
   saveTokenToServer, 
   configurePushNotification, 
   setUpBackgroundMessageListener } from '../utils/FCMUtils';
+  
 
 const Board = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -23,16 +24,25 @@ const Board = () => {
   const navigation = useNavigation();
 
   const locations = [
-    { name: '서울', subLocations: [] },
-    { name: '부산', subLocations: [] },
-    { name: '대구', subLocations: [] },
-    { name: '광주', subLocations: [] },
-    { name: '인천', subLocations: [] },
-    { name: '경기도', subLocations: [] },
-    { name: '충청북도', subLocations: [] },
-    { name: '경상남도', subLocations: ['진주', '창원', '김해'] },
-    { name: '경상북도', subLocations: [] },
-    { name: '전라도', subLocations: [] },
+    { name: '광주광역시', subLocations: ['동구', '서구', '남구', '북구', '광산구'] },
+    { name: '대구광역시', subLocations: ['중구', '동구', '서구', '남구', '북구', '수성구', '달서구', '달성군']
+    },
+    { name: '대전광역시', subLocations: ['동구', '중구', '서구', '유성구', '대덕구'] },
+    { name: '부산광역시', subLocations: ['중구', '서구', '동구', '영도구', '부산진구', '동래구', '남구', '북구', '해운대구', '사하구', '금정구', '강서구', '연제구', '수영구', '사상구', '기장군'] },
+    { name: '서울특별시', subLocations: ['종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구', '성북구', '강북구', '도봉구', '노원구', '은평구', '서대문구', '마포구', '양천구', '강서구', '구로구', '금천구', '영등포구', '동작구', '관악구', '서초구', '강남구', '송파구', '강동구'] },
+    { name: '울산광역시', subLocations: ['울주군', '남구', '동구', '북구', '중구'] },
+    { name: '인천광역시', subLocations: ['중구', '동구', '미추홀구', '연수구', '남동구', '부평구', '계양구', '서구', '강화군', '옹진군'] },
+    { name: '경기도', subLocations:  ['수원', '성남', '의정부', '안양', '부천', '광명', '평택', '동두천', '안산', '고양', '과천', '구리', '남양주', '오산', '시흥', '파주', '여주', '하남', '김포', '광주', '이천', '양평', '포천', '가평'] },
+    { name: '강원도', subLocations: ['춘천', '원주', '강릉', '동해', '태백', '속초', '삼척', '홍천', '횡성', '영월', '평창', '정선', '철원', '화천', '양구', '인제', '고성'] },
+    { name: '경상남도', subLocations: ['진주', '창원', '김해', '밀양', '통영', '사천', '거제', '양산', '함안', '창녕', '하동', '산청', '의령', '함양', '거창', '남해', '산청']
+    },
+    { name: '경상북도', subLocations: ['포항', '경주', '김천', '안동', '구미', '영주', '상주', '문경', '경산', '군위', '의성', '청송', '영양', '영덕', '청도', '고령', '성주', '칠곡', '예천', '봉화', '울진', '울릉'] },
+    { name: '충청남도', subLocations: ['천안', '공주', '보령', '아산', '서산', '논산', '당진', '금산', '부여', '서천', '청양', '홍성', '예산', '태안'] },
+    { name: '충청북도', subLocations: ['청주', '충주', '제천', '보은', '옥천', '영동', '증평', '진천', '괴산', '음성', '단양'] },
+    { name: '전라북도', subLocations: ['목포', '여수', '순천', '광양', '나주', '담양', '곡성', '구례', '고흥', '보성', '화순', '장흥', '강진', '완도', '진도', '신안'] },
+    { name: '전라남도', subLocations: ['전주', '군산', '익산', '정읍', '남원', '김제', '완주', '진안', '무주', '장수', '임실', '순창', '고창', '부안'] },
+    { name: '제주도', subLocations: ['제주','서귀포'] },
+    
   ];
   
 
@@ -181,29 +191,53 @@ const Board = () => {
           </View>
         )}
 
-        {subLocationVisible && selectedLocation === '경상남도' && (
-          <View style={styles.dropdown}>
-            <ScrollView style={styles.scrollContainer}>
+{subLocationVisible && (
+  <View style={styles.dropdown}>
+    <ScrollView style={styles.scrollContainer}>
+      <TouchableOpacity
+        style={styles.dropdownItem}
+        onPress={handleResetLocation}
+      >
+        <Text style={styles.dropdownItemText}>상위 지역</Text>
+      </TouchableOpacity>
+
+      {/* 반복문을 사용하여 지역별 서브로케이션을 처리 */}
+      {['광주광역시',
+  '대구광역시',
+  '대전광역시',
+  '부산광역시',
+  '서울특별시',
+  '울산광역시',
+  '인천광역시',
+  '경기도',
+  '강원도',
+  '경상남도',
+  '경상북도',
+  '충청남도',
+  '충청북도',
+  '전라북도',
+  '전라남도',
+  '제주도'].map((locationName) => {
+        if (selectedLocation === locationName) {
+          return locations
+            .find((loc) => loc.name === locationName)
+            .subLocations.map((subLocation, index) => (
               <TouchableOpacity
+                key={index}
                 style={styles.dropdownItem}
-                onPress={handleResetLocation}
+                onPress={() => handleSubLocationPress(subLocation)}
               >
-                <Text style={styles.dropdownItemText}>상위 지역</Text>
+                <Text style={styles.dropdownItemText}>{subLocation}</Text>
               </TouchableOpacity>
-              {locations
-                .find((loc) => loc.name === '경상남도')
-                .subLocations.map((subLocation, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownItem}
-                    onPress={() => handleSubLocationPress(subLocation)}
-                  >
-                    <Text style={styles.dropdownItemText}>{subLocation}</Text>
-                  </TouchableOpacity>
-                ))}
-            </ScrollView>
-          </View>
-        )}
+            ));
+        }
+        return null; // 조건에 맞지 않으면 아무것도 반환하지 않음
+      })}
+    </ScrollView>
+  </View>
+)}
+
+
 
         <TextInput style={styles.searchInput} placeholder="검색" />
 
