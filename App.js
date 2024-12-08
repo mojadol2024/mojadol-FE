@@ -5,7 +5,6 @@ import LoginNavigator from './src/navigation/LoginNavigator';
 import '@react-native-firebase/app'; // This initializes Firebase automatically
 import messaging from '@react-native-firebase/messaging'; // Import messaging module
 
-
 const Stack = createStackNavigator();
 
 const App = () => {

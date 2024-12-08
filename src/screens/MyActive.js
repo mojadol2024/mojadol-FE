@@ -1,192 +1,148 @@
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { API_URL } from '@env';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MyActivityScreen = () => {
-  // 탭 관리 상태
-  const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'comments', 'passwordCheck', 'updateUser'
-  const [password, setPassword] = useState(''); // 비밀번호 입력 상태
-  const [isPasswordVerified, setIsPasswordVerified] = useState(false); // 비밀번호 확인 여부
-
-  // 사용자 활동 상태
-  const [myPosts, setMyPosts] = useState([]); // 내가 쓴 글
-  const [myComments, setMyComments] = useState([]); // 내가 쓴 댓글
-  const [loading, setLoading] = useState(false); // 로딩 상태
-
-  // 사용자 정보 상태
+  const [activeTab, setActiveTab] = useState('posts');
+  const [password, setPassword] = useState('');
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [myPosts, setMyPosts] = useState([]);
+  const [myComments, setMyComments] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [userInfo, setUserInfo] = useState({
     nickName: '',
     mail: ''
   });
+  const [page, setPage] = useState(0);
+  const [pageData, setPageData] = useState(false);
+  const navigation = useNavigation();
+  const flatListRef = useRef(null);
 
   // 내가 쓴 글 가져오기
-  const fetchMyPosts = async () => {
+  const fetchMyPosts = async (page) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/myPosts`);
-      setMyPosts(response.data);
+      const accessToken = await AsyncStorage.getItem('accessToken'); 
+      const response = await axios.get(`${API_URL}/myActivity/myBoardList?page=${page}`, {
+        headers: {
+          Authorization: accessToken,
+        },
+      });
+      const data = response.data;
+
+      
+
+      setMyPosts((prevData) => [...prevData, ...data.content]);
+      setPageData(data.pagination);
+      //setLoading(false);
     } catch (error) {
       console.error('내가 쓴 글 가져오기 실패:', error);
-      Alert.alert('내가 쓴 글을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 내가 쓴 댓글 가져오기
-  const fetchMyComments = async () => {
+  const fetchMyComments = async (page) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/myComments`);
-      setMyComments(response.data);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const response = await axios.get(`${API_URL}/myActivity/myCommentList?page=${page}`, {
+        headers: {
+          Authorization: accessToken 
+        },
+      });
+      const data = response.data;
+
+      setMyComments((prevData) => [...prevData, ...data.content]);
+      setPageData(data.pagination);
+      //setLoading(false);
     } catch (error) {
       console.error('내가 쓴 댓글 가져오기 실패:', error);
-      Alert.alert('내가 쓴 댓글을 불러오는 데 실패했습니다.');
+      Alert.alert('댓글 불러오기 실패', '댓글 정보를 불러오지 못했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  // 비밀번호 확인 API 호출
-  const passwordCheck = async () => {
-    const requestData = {
-      userSeq: 123, // 실제 사용자 고유 번호
-      userId: 'exampleUser',
-      userPw: password // 입력받은 비밀번호
-    };
-
-    try {
-      const response = await axios.post(`${API_URL}/passwordCheck`, requestData);
-      if (response.data.success) {
-        Alert.alert('확인 성공', '비밀번호가 일치합니다.');
-        setIsPasswordVerified(true); // 비밀번호 확인 성공
-        setActiveTab('updateUser'); // 내 정보 수정 화면으로 이동
-      } else {
-        Alert.alert('확인 실패', '비밀번호가 일치하지 않습니다.');
-      }
-    } catch (error) {
-      console.error('비밀번호 확인 실패:', error);
-      Alert.alert('오류', '비밀번호 확인 중 문제가 발생했습니다.');
-    }
+  // 페이지 증가
+  const handleLoadMore = () => {
+    //if (loading || (pageData && page >= pageData.totalPages)) return;
+    if (loading || !pageData || page >= pageData.totalPages) return;  // 페이지가 마지막이면 더 이상 로딩하지 않음 
+    setPage((prevPage) => prevPage + 1);
   };
 
-  // 사용자 정보 업데이트 API 호출
-  const updateUser = async () => {
-    try {
-      const response = await axios.post(`${API_URL}/updateUser`, userInfo);
-      Alert.alert('정보 수정 성공', '사용자 정보가 성공적으로 수정되었습니다.');
-    } catch (error) {
-      console.error('정보 수정 실패:', error);
-      Alert.alert('오류', '사용자 정보 수정에 실패했습니다.');
-    }
-  };
-
-  // 탭에 따라 데이터를 가져오기
+  // 탭 변경에 따른 데이터 초기화
   useEffect(() => {
     if (activeTab === 'posts') {
-      fetchMyPosts();
+      setMyPosts([]);
+      //setMyComments([]);
+      setPage(0);
     } else if (activeTab === 'comments') {
-      fetchMyComments();
+      //setMyPosts([]);
+      setMyComments([]);
+      setPage(0);
     }
   }, [activeTab]);
 
-  // 탭에 따라 컨텐츠 렌더링
-  const renderContent = () => {
-    if (loading) {
-      return <Text style={styles.loadingText}>로딩 중...</Text>;
-    }
-
+  useEffect(() => {
     if (activeTab === 'posts') {
-      // 내가 쓴 글
-      if (myPosts.length === 0) {
-        return <Text style={styles.noActivityText}>내가 쓴 글이 없습니다.</Text>;
-      }
-      return (
-        <FlatList
-          data={myPosts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Image source={{ uri: item.imageUrl }} style={styles.image} />
-              <Text style={styles.titleText}>{item.title}</Text>
-            </View>
-          )}
-        />
-      );
+      fetchMyPosts(page);
     } else if (activeTab === 'comments') {
-      // 내가 쓴 댓글
-      if (myComments.length === 0) {
-        return <Text style={styles.noActivityText}>내가 쓴 댓글이 없습니다.</Text>;
-      }
-      return (
-        <FlatList
-          data={myComments}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Text>{item.comment}</Text>
-            </View>
-          )}
+      fetchMyComments(page);
+    }
+  }, [page, activeTab]);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+      style={styles.viewButton}
+      onPress={() => navigation.navigate('BoardDetail', { boardSeq: item.boardSeq })}
+    >
+      <View style={styles.rowContainer}>
+        <Image
+          source={{ uri: item.photo }}
+          style={styles.image}
+          onError={(e) => console.log('Image load error', e.nativeEvent.error)}
         />
-      );
-    } else if (activeTab === 'passwordCheck') {
-      // 비밀번호 확인 화면
-      return (
-        <View>
-          <Text style={styles.label}>비밀번호를 입력하세요:</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            placeholder="비밀번호"
-          />
-          <TouchableOpacity onPress={passwordCheck} style={styles.button}>
-            <Text style={styles.buttonText}>확인</Text>
-          </TouchableOpacity>
+
+        <View style={styles.textContainer}>
+          <Text style={styles.statusOverlay}>{item.report}</Text>
+          <Text style={styles.breed}>{item.breedName}</Text>
+          <Text>장소: {item.location}</Text>
+          <Text>실종날짜: {item.lostDate}</Text>
         </View>
-      );
-    } else if (activeTab === 'updateUser') {
-      // 내 정보 수정 화면 (비밀번호 확인 후 접근 가능)
-      if (!isPasswordVerified) {
-        return <Text style={styles.noActivityText}>비밀번호 확인이 필요합니다.</Text>;
-      }
-      return (
-        <View>
-          <Text>닉네임</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="닉네임"
-            value={userInfo.nickName}
-            onChangeText={(text) => setUserInfo({ ...userInfo, nickName: text })}
-          />
-          <Text>이메일</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="이메일"
-            value={userInfo.mail}
-            onChangeText={(text) => setUserInfo({ ...userInfo, mail: text })}
-          />
-          <TouchableOpacity onPress={updateUser} style={styles.button}>
-            <Text style={styles.buttonText}>정보 수정</Text>
-          </TouchableOpacity>
+      </View>
+
+      <View
+          style={[
+            styles.reportBox,
+            item.report === 0 ? styles.missingReport : styles.foundReport, // 0이면 실종, 1이면 제보
+          ]}
+        >
+          <Text style={styles.reportText}>
+            {item.report === 0 ? '실종' : '발견'}
+          </Text>
         </View>
-      );
+      </TouchableOpacity>
+    </View>
+  );
+
+  // 스크롤 위치 유지
+  const handleContentContainerLayout = () => {
+    if (flatListRef.current && page > 0) {
+      flatListRef.current.scrollToOffset({ animated: false, offset: 0 });
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>나의 활동</Text>
       </View>
 
-      {/* 탭 전환 버튼 */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'posts' && styles.activeTab]}
@@ -200,22 +156,29 @@ const MyActivityScreen = () => {
         >
           <Text style={[styles.tabText, activeTab === 'comments' && styles.activeText]}>내가 쓴 댓글</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'updateUser' && styles.activeTab]}
-          onPress={() => {
-            if (isPasswordVerified) {
-              setActiveTab('updateUser'); // 비밀번호 확인 완료 시 바로 이동
-            } else {
-              setActiveTab('passwordCheck'); // 비밀번호 확인 화면으로 이동
-            }
-          }}
-        >
-          <Text style={[styles.tabText, activeTab === 'updateUser' && styles.activeText]}>내 정보 수정</Text>
-        </TouchableOpacity>
       </View>
 
-      {/* 컨텐츠 렌더링 */}
-      <View style={styles.content}>{renderContent()}</View>
+      <View style={styles.content}>
+        {/* 로딩 상태 표시 */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F1c0ba" />
+              <Text>로딩 중...</Text>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={activeTab === 'posts' ? myPosts : myComments}
+            renderItem={renderItem}
+            keyExtractor={(item) => `${item.boardSeq}`}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.7}
+            initialNumToRender={pageData.pageSize}
+            contentContainerStyle={styles.contentContainer}
+            onLayout={handleContentContainerLayout}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -242,17 +205,17 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#c78c30',
+    borderColor: '#F1c0ba',
     borderRadius: 22.375,
     padding: 10,
     marginHorizontal: 5,
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#c78c30',
+    backgroundColor: '#F1c0ba',
   },
   tabText: {
-    color: '#000000',
+    color: '#000',
     fontWeight: 'bold',
   },
   activeText: {
@@ -262,50 +225,69 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
-  },
   image: {
-    width: 50,
-    height: 50,
+    width: 55,
+    height: 55,
     borderRadius: 25,
-    marginRight: 10,
+    marginRight: 25,
+    marginLeft: 10,
   },
-  titleText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  noActivityText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#999999',
-    marginTop: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: '#c78c30',
-    padding: 10,
+  loadingSpinner: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    backgroundColor: '#ffffff',
   },
-  buttonText: {
-    color: '#ffffff',
+  card: {
+    borderWidth: 1,
+    borderColor: '#cccccc', 
+    borderRadius: 10, 
+    padding: 15, 
+    marginBottom: 15, 
+    backgroundColor: '#ffffff', 
+    shadowColor: '#000', // 그림자 색상을 검정으로 설정
+    shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋
+    shadowOpacity: 0.5, // 그림자 투명도 설정
+    shadowRadius: 5, // 그림자 퍼짐 정도 설정
+    elevation: 5, // Android 그림자 설정
+  },
+  rowContainer: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center', 
+    
+  },
+  breed: {
+    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
+  reportBox: {
+    position: 'absolute',
+    top: -2, 
+    right: -2, 
+    paddingVertical: 5, 
+    paddingHorizontal: 10, 
+    borderRadius: 22.375,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  missingReport: {
+    backgroundColor: '#f5fde9', 
+  },
+  foundReport: {
+    backgroundColor: '#fbf3e9', 
+  },
+  reportText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#aeaeae',
+    
+  },
+  
 });
 
 export default MyActivityScreen;
