@@ -1,23 +1,26 @@
-// ForgetAccount.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Keyboard } from 'react-native';
 import axios from 'axios';
+import styles from '../components/ForgetAccountStyle';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 import { API_URL } from '@env';
 
 const ForgetAccount = ({ navigation }) => {
     const [selectedTab, setSelectedTab] = useState('findId'); // 'findId' or 'findPw'
-    const [selectedOption, setSelectedOption] = useState('email'); // 'email' or 'phone'
+    const [emailValue, setEmailValue] = useState('');
+    const [idValue, setIdValue] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
+    const [isCodeSent, setIsCodeSent] = useState(false); // 확인 코드 전송 여부
+    const [isCodeVerified, setIsCodeVerified] = useState(false); // 확인 코드 인증 여부
     const [countdown, setCountdown] = useState(0);
     const [resendAvailable, setResendAvailable] = useState(false);
-    const [mail, setMail] = useState();
-    const [userId, setUserId] = useState();
-    const [code, setCode] = useState();
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
     useEffect(() => {
         let timer;
         if (countdown > 0) {
             timer = setInterval(() => {
-                console.log("Countdown:", countdown); // 디버깅용 로그
                 setCountdown((prev) => prev - 1);
             }, 1000);
         } else if (countdown === 0 && !resendAvailable) {
@@ -26,87 +29,89 @@ const ForgetAccount = ({ navigation }) => {
         return () => clearInterval(timer);
     }, [countdown]);
 
-
-    const handleFindAccount = async () => {
-        if (!mail) {
-            Alert.alert('Error', 'Please enter the required information.');
-            return;
-        }
-        if (selectedOption === 'email' && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(mail)) {
-            Alert.alert('Error', 'Please enter a valid email address.');
-            return;
-        }
-
-        if (selectedTab === 'findId') {
-            try {
-                // 실제 API 요청을 통해 이메일 또는 휴대폰으로 아이디 또는 비밀번호 전송
-                await axios.post(`${API_URL}/auth/findUserId`, {
-                    mail : mail
-                });
-    
-                // 성공 메시지와 5분 타이머 시작
-                Alert.alert('Success', `Account details have been sent via ${selectedOption}.`);
-                setCountdown(300); // 5분 (300초)
-                setResendAvailable(false);
-            } catch (error) {
-                if (error.response) {
-                    Alert.alert('Failed', error.response.data.error);
-                } else {
-                    Alert.alert('Error', 'Unable to connect to the server');
-                }
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                setIsKeyboardVisible(true);
             }
-        } else {
-            try {
-                // 실제 API 요청을 통해 이메일 또는 휴대폰으로 아이디 또는 비밀번호 전송
-                const response = await axios.post(`${API_URL}/auth/findPassword`, {
-                    userId : userId,
-                    mail : mail
-                });
-                if (response.data == "YES") {
-                    // 성공 메시지와 5분 타이머 시작
-                    Alert.alert('Success', `Account details have been sent via ${selectedOption}.`);
-                    setCountdown(300); // 5분 (300초)
-                    setResendAvailable(false);
-                }
-            } catch (error) {
-                if (error.response) {
-                    Alert.alert('Failed', error.response.data.error);
-                } else {
-                    Alert.alert('Error', 'Unable to connect to the server');
-                }
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                setIsKeyboardVisible(false);
             }
-        }
-    };
+        );
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
 
-    const handleCheclCode = async () => {
-        if (!userId) {
-            Alert.alert('Error', 'Please enter the required information.');
+    const handleFindId = async () => {
+        if (!emailValue) {
+            Alert.alert('Error', '이메일 주소를 입력하세요.');
             return;
         }
-        if (selectedOption === 'email' &&!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(mail)) {
-            Alert.alert('Error', 'Please enter a valid email address.');
+        if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(emailValue)) {
+            Alert.alert('Error', '유효한 이메일 주소를 입력하세요.');
             return;
         }
 
         try {
-            // 실제 API 요청을 통해 이메일 또는 휴대폰으로 전송된 인증번호를 확인
-            const response = await axios.post(`${API_URL}/auth/mailCheck`, {
-                userId : userId,
-                mail : mail,
-                code : code
+            await axios.post(`${API_URL}/auth/findUserId`, {
+                mail: emailValue,
             });
-
-            if (response.data === "YES") {
-                //navigate 해주시면 됩니다. 비밀번호 재설정 하는 페이지로 리다이렉트
-                console.log("Success");
-            }
-
+            Alert.alert('Success', '아이디가 이메일로 전송되었습니다.');
         } catch (error) {
-            if (error.response) {
-                Alert.alert('Failed', error.response.data.error);
-            } else {
-                Alert.alert('Error', 'Unable to connect to the server');
-            }
+            Alert.alert('Error', '아이디 찾기에 실패했습니다.');
+        }
+    };
+
+    const handleSendVerificationCode = async () => {
+        if (!emailValue) {
+            Alert.alert('Error', '이메일 주소를 입력하세요.');
+            return;
+        }
+        if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(emailValue)) {
+            Alert.alert('Error', '유효한 이메일 주소를 입력하세요.');
+            return;
+        }
+
+        try {
+            await axios.post(`${API_URL}/auth/findPassword`, {
+                userId: idValue,
+                mail: emailValue,
+            });
+            setIsCodeSent(true);
+            setCountdown(300); // 5분 타이머 시작
+            setResendAvailable(false);
+            Alert.alert('Success', '확인 코드가 이메일로 전송되었습니다.');
+        } catch (error) {
+            Alert.alert('Error', '확인 코드 전송에 실패했습니다.');
+        }
+    };
+
+    const handleVerifyCode = async () => {
+        if (!verificationCode) {
+            Alert.alert('Error', '확인 코드를 입력하세요.');
+            return;
+        }
+        console.log("Verification Code: ", verificationCode);
+
+        try {
+            await axios.post(`${API_URL}/auth/mailCheck`, {
+                userId: idValue,
+                mail: emailValue,
+                code: verificationCode,
+            });
+            setIsCodeVerified(true);
+            await AsyncStorage.setItem('userId', idValue); // 인증 성공 시 userId를 AsyncStorage에 저장
+            await AsyncStorage.setItem('mail', emailValue); // 인증 성공 시 이메일을 AsyncStorage에 저장
+            Alert.alert('Success', '확인 코드가 인증되었습니다.');
+            navigation.navigate('ResetPassword', { userId: idValue, mail: emailValue });
+        } catch (error) {
+            Alert.alert('Error', '확인 코드가 유효하지 않습니다.');
         }
     };
 
@@ -116,166 +121,110 @@ const ForgetAccount = ({ navigation }) => {
             <View style={styles.tabContainer}>
                 <TouchableOpacity
                     style={[styles.tabButton, selectedTab === 'findId' && styles.activeTab]}
-                    onPress={() => setSelectedTab('findId')}
+                    onPress={() => {
+                        setSelectedTab('findId');
+                        setIsCodeSent(false);
+                        setIsCodeVerified(false);
+                        setVerificationCode('');
+                    }}
                 >
-                    <Text style={selectedTab === 'findId' ? styles.activeTabText : styles.tabText}>아이디 찾기</Text>
+                    <Text style={selectedTab === 'findId' ? styles.activeTabText : styles.tabText}>
+                        아이디 찾기
+                    </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.tabButton, selectedTab === 'findPw' && styles.activeTab]}
-                    onPress={() => setSelectedTab('findPw')}
+                    onPress={() => {
+                        setSelectedTab('findPw');
+                        setIsCodeSent(false);
+                        setIsCodeVerified(false);
+                        setVerificationCode('');
+                        // 비밀번호 찾기에서 자동으로 이메일 주소 입력
+                        if (emailValue) {
+                            setEmailValue(emailValue);
+                        }
+                    }}
                 >
-                    <Text style={selectedTab === 'findPw' ? styles.activeTabText : styles.tabText}>비밀번호 찾기</Text>
+                    <Text style={selectedTab === 'findPw' ? styles.activeTabText : styles.tabText}>
+                        비밀번호 찾기
+                    </Text>
                 </TouchableOpacity>
             </View>
 
             {selectedTab === 'findId' ? (
                 <>
-                    <View style={styles.optionContainer}>
-                        <TouchableOpacity
-                            style={[styles.optionButton, selectedOption === 'email' && styles.activeOption]}
-                            onPress={() => setSelectedOption('email')}
-                        >
-                            <Text style={selectedOption === 'email' ? styles.activeOptionText : styles.optionText}>가입한 이메일로 찾기</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.optionButton, selectedOption === 'phone' && styles.activeOption]}
-                            onPress={() => setSelectedOption('phone')}
-                        >
-                            <Text style={selectedOption === 'phone' ? styles.activeOptionText : styles.optionText}>가입한 휴대폰으로 찾기</Text>
-                        </TouchableOpacity>
-                    </View>
                     <TextInput
                         style={styles.input}
-                        placeholder={selectedOption === 'email' ? '이메일 주소' : '휴대폰 번호'}
-                        value={mail}
-                        onChangeText={setMail}
-                        keyboardType={selectedOption === 'email' ? 'email-address' : 'phone-pad'}
+                        placeholder="가입한 이메일 주소"
+                        value={emailValue}
+                        onChangeText={setEmailValue}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
                     />
-                    <TouchableOpacity style={styles.button} onPress={handleFindAccount} disabled={countdown > 0}>
+                    <TouchableOpacity style={styles.button} onPress={handleFindId}>
                         <Text style={styles.buttonText}>아이디 찾기</Text>
                     </TouchableOpacity>
-                    {countdown > 0 && <Text style={styles.countdownText}>다시 요청하시겠습니까? {Math.floor(countdown / 60)}분 {countdown % 60}초 후 가능합니다.</Text>}
-                    {resendAvailable && <TouchableOpacity onPress={handleFindAccount}><Text style={styles.resendText}>다시 요청하기</Text></TouchableOpacity>}
                 </>
             ) : (
                 <>
                     <TextInput
                         style={styles.input}
                         placeholder="가입한 아이디"
-                        value={userId}
-                        onChangeText={setUserId}
+                        value={idValue}
+                        onChangeText={setIdValue}
+                        autoCapitalize="none"
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="비밀번호 재설정을 위한 이메일"
-                        value={mail}
-                        onChangeText={setMail}
+                        placeholder="가입한 이메일 주소"
+                        value={emailValue}
+                        onChangeText={setEmailValue}
                         keyboardType="email-address"
+                        autoCapitalize="none"
                     />
-                    <TouchableOpacity style={styles.button} onPress={handleFindAccount} disabled={countdown > 0}>
-                        <Text style={styles.buttonText}>비밀번호 찾기</Text>
-                    </TouchableOpacity>
-                    {countdown > 0 && <Text style={styles.countdownText}>다시 요청하시겠습니까? {Math.floor(countdown / 60)}분 {countdown % 60}초 후 가능합니다.</Text>}
-                    {resendAvailable && <TouchableOpacity onPress={handleFindAccount}><Text style={styles.resendText}>다시 요청하기</Text></TouchableOpacity>}
+                    {!isCodeSent ? (
+                        <TouchableOpacity style={styles.button} onPress={handleSendVerificationCode}>
+                            <Text style={styles.buttonText}>비밀번호 찾기</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="이메일로 받은 확인 코드"
+                                value={verificationCode}
+                                onChangeText={setVerificationCode}
+                                autoCapitalize="none"
+                            />
+                            <View style={styles.buttonWrapper}>
+                                <TouchableOpacity style={styles.verificationButton} onPress={handleVerifyCode}>
+                                    <Text style={styles.buttonText}>확인 코드 인증</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.buttonWrapper}>
+                                <TouchableOpacity style={styles.resendButton} onPress={handleSendVerificationCode}>
+                                    <Text style={styles.buttonText}>다시 보내기</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.countdownText}>
+                                {`다시 보내기 가능까지: ${Math.floor(countdown / 60)}분 ${countdown % 60}초`}
+                            </Text>
+                        </>
+                    )}
                 </>
             )}
+
             <TouchableOpacity style={styles.exitButton} onPress={() => navigation.goBack()}>
-                <Text style={styles.exitButtonText}>나가기</Text>
+                <Text style={styles.exitButtonText}>뒤로가기</Text>
             </TouchableOpacity>
+
+            {/* 하단 고정된 MOJADOL 텍스트 */}
+            {!isKeyboardVisible && (
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>MOJADOL</Text>
+                </View>
+            )}
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    tabButton: {
-        flex: 1,
-        padding: 15,
-        alignItems: 'center',
-        borderBottomWidth: 2,
-        borderColor: '#ddd',
-    },
-    activeTab: {
-        borderColor: '#007BFF',
-    },
-    tabText: {
-        color: '#666',
-    },
-    activeTabText: {
-        color: '#007BFF',
-        fontWeight: 'bold',
-    },
-    optionContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    optionButton: {
-        flex: 1,
-        padding: 15,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        marginHorizontal: 5,
-    },
-    activeOption: {
-        borderColor: '#007BFF',
-    },
-    optionText: {
-        color: '#666',
-    },
-    activeOptionText: {
-        color: '#007BFF',
-        fontWeight: 'bold',
-    },
-    input: {
-        width: '90%',
-        padding: 15,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        padding: 15,
-        borderRadius: 10,
-    },
-    buttonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    exitButton: {
-        marginTop: 20,
-        padding: 10,
-    },
-    exitButtonText: {
-        color: '#666',
-        textDecorationLine: 'underline',
-    },
-    countdownText: {
-        marginTop: 10,
-        color: '#FF0000',
-    },
-    resendText: {
-        marginTop: 10,
-        color: '#007BFF',
-        textDecorationLine: 'underline',
-    },
-});
 
 export default ForgetAccount;
