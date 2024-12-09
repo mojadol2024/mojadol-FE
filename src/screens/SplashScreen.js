@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        backgroundColor: '#C78C30',
+        backgroundColor: '#ffffff',
         paddingTop: 120, // 위쪽 여백을 추가해 로고를 더 위로 이동
     },
     logoImage: {

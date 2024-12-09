@@ -1,29 +1,118 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
-import Button from './Button'; // Button 컴포넌트 import
-//Button의 위치가 이상함 -> 화남
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Modal,
+  Alert,
+  Image
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_URL } from '@env';
+import { launchImageLibrary } from 'react-native-image-picker';  // 이미지 피커 추가
+import { useNavigation } from '@react-navigation/native';  // 네비게이션 훅 추가
+
 
 const DogRegistration = () => {
-  const [name, setName] = useState('');
-  const [gender, setGender] = useState('');
-  const [age, setAge] = useState('');
-  const [weight, setWeight] = useState('');
+  const navigation = useNavigation();  // 네비게이션 훅 사용
   const [missingDate, setMissingDate] = useState('');
   const [breed, setBreed] = useState('');
-  const [region, setRegion] = useState('');
+  const [province, setProvince] = useState(''); // 도
+  const [city, setCity] = useState(''); // 시
+  const [district, setDistrict] = useState(''); // 동
   const [characteristics, setCharacteristics] = useState('');
   const [contact, setContact] = useState('');
-  
+  const [photo, setPhoto] = useState(null);
+
   // Modal visibility states
-  const [isGenderModalVisible, setGenderModalVisible] = useState(false);
   const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
-  const handleRegister = () => {
-    if (!name || !gender || !age || !weight) {
-      alert("모든 필드를 채워주세요!");
+  // 전체 지역 목록
+  const provinces = [
+    '전체','서울', '부산', '대구', '인천', '광주', '대전', '울산',
+    '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주',
+  ];
+
+  const handleRegister = async () => {
+    // 필수 필드 검증
+    if (!breed || !province || !city || !district || !contact) {
+      Alert.alert('오류', '모든 필드를 채워주세요!');
       return;
     }
-    alert('등록되었습니다.');
+
+    try {
+      // 액세스 토큰 가져오기
+      const accessToken = await AsyncStorage.getItem('accessToken');
+
+      const formData = new FormData();
+      formData.append('lostDate', missingDate);
+      formData.append('breedName', breed);
+      formData.append('province', province);  // 도
+      formData.append('city', city);  // 시
+      formData.append('district', district);  // 동
+      formData.append('memo', characteristics);
+      formData.append('report', 1);
+      if (photo) {
+        formData.append('photo', {
+          uri: photo, // 선택된 사진의 URI
+          type: 'image/jpeg', // 파일 형식
+          name: 'photo.jpg', // 파일 이름
+        });
+      }
+
+      // POST 요청으로 실종견 등록
+      const response = await axios.post(
+        `${API_URL}/board/write`, formData, {
+          headers: {
+            Authorization: accessToken,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        // 응답에서 사진 URL 처리
+        if (response.data.photoUrl) {
+          setPhoto(response.data.photoUrl);
+        }
+
+        Alert.alert('성공', '실종견이 성공적으로 등록되었습니다!');
+
+        // 필드 초기화
+        setMissingDate('');
+        setBreed('');
+        setProvince('');
+        setCity('');
+        setDistrict('');
+        setCharacteristics('');
+        setContact('');
+        setPhoto(null); // 사진 초기화
+        navigation.navigate('Board');  // 'Board'는 게시판 화면의 이름
+      } else {
+        Alert.alert('오류', '강아지 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('강아지 등록 오류:', error);
+      Alert.alert('오류', '서버 요청 중 문제가 발생했습니다.');
+    }
+  };
+
+  const pickImage = () => {
+    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
+      if (response.didCancel) {
+        console.log('사용자가 이미지를 선택하지 않았습니다.');
+      } else if (response.errorCode) {
+        console.log('이미지 선택 에러:', response.errorMessage);
+      } else {
+        setPhoto(response.assets[0].uri); // 선택한 사진 URI 저장
+      }
+    });
   };
 
   return (
@@ -32,52 +121,15 @@ const DogRegistration = () => {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <View style={styles.imageContainer}>
-          <Text style={styles.imagePlaceholder}>사진 등록</Text>
-        </View>
-
-        <Text style={styles.label}>이름</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="강아지 이름"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Text style={styles.label}>성별</Text>
-        <TouchableOpacity style={styles.input} onPress={() => setGenderModalVisible(true)}>
-          <Text>{gender ? (gender === 'male' ? '수컷' : '암컷') : '성별 선택'}</Text>
-        </TouchableOpacity>
-        <Modal visible={isGenderModalVisible} transparent={true} animationType="slide">
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity onPress={() => { setGender('male'); setGenderModalVisible(false); }} style={styles.modalItem}>
-                <Text style={styles.modalItemText}>수컷</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setGender('female'); setGenderModalVisible(false); }} style={styles.modalItem}>
-                <Text style={styles.modalItemText}>암컷</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        <Text style={styles.label}>나이</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="나이"
-          keyboardType="numeric"
-          value={age}
-          onChangeText={setAge}
-        />
-
-        <Text style={styles.label}>몸무게</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="몸무게 (kg)"
-          keyboardType="numeric"
-          value={weight}
-          onChangeText={setWeight}
-        />
+        {/* 사진 표시 섹션 */}
+        <Text style={styles.label}>사진</Text>
+        {photo ? (
+          <Image source={{ uri: photo }} style={styles.image} />
+        ) : (
+          <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+            <Text style={styles.imagePlaceholder}>사진 등록</Text>
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.label}>발견일</Text>
         <TextInput
@@ -95,25 +147,46 @@ const DogRegistration = () => {
           onChangeText={setBreed}
         />
 
+        {/* 실종 지역 (도) 모달 */}
         <Text style={styles.label}>발견 지역</Text>
         <TouchableOpacity style={styles.input} onPress={() => setRegionModalVisible(true)}>
-          <Text>{region ? region : '지역 선택'}</Text>
+          <Text>{province ? province : '지역 선택'}</Text>
         </TouchableOpacity>
+        
         <Modal visible={isRegionModalVisible} transparent={true} animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <TouchableOpacity onPress={() => { setRegion('서울'); setRegionModalVisible(false); }} style={styles.modalItem}>
-                <Text style={styles.modalItemText}>서울</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setRegion('부산'); setRegionModalVisible(false); }} style={styles.modalItem}>
-                <Text style={styles.modalItemText}>부산</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setRegion('대구'); setRegionModalVisible(false); }} style={styles.modalItem}>
-                <Text style={styles.modalItemText}>대구</Text>
-              </TouchableOpacity>
+              {provinces.map((area) => (
+                <TouchableOpacity
+                  key={area}
+                  onPress={() => {
+                    setProvince(area);
+                    setRegionModalVisible(false);
+                  }}
+                  style={styles.modalItem}
+                >
+                  <Text style={styles.modalItemText}>{area}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </Modal>
+
+        {/* 시 입력 */}
+        <TextInput
+          style={styles.input}
+          placeholder="시"
+          value={city}
+          onChangeText={setCity}
+        />
+
+        {/* 동 */}
+        <TextInput
+          style={styles.input}
+          placeholder="동"
+          value={district}
+          onChangeText={setDistrict}
+        />
 
         <Text style={styles.label}>특이사항</Text>
         <TextInput
@@ -133,13 +206,9 @@ const DogRegistration = () => {
           onChangeText={setContact}
         />
 
-        {/* 기존 등록 버튼 */}
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-          <Text style={styles.registerButtonText}>등록</Text>
+          <Text style={styles.registerButtonText}>등록하기</Text>
         </TouchableOpacity>
-
-        {/* 추가된 Button.js 컴포넌트 버튼 */}
-        <Button title="추가 버튼" onPress={() => alert('추가 버튼 클릭')} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -148,53 +217,42 @@ const DogRegistration = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  scrollContainer: {
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
   },
   imageContainer: {
     width: '100%',
     height: 150,
-    backgroundColor: '#C78C30',
+    backgroundColor: '#f1c0ba',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
+  image: {
+    width: '100%',
+    height: 150,
+    marginBottom: 20,
+  },
   imagePlaceholder: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
   },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#444444',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   input: {
     height: 40,
-    borderColor: '#C78C30',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 22.375,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+    paddingLeft: 10,
+    marginBottom: 12,
   },
   textArea: {
     height: 100,
     textAlignVertical: 'top',
-  },
-  registerButton: {
-    backgroundColor: '#C78C30',
-    paddingVertical: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  registerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
@@ -204,21 +262,25 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 10,
+    width: 300,
     padding: 20,
-    alignItems: 'center',
-    width: '70%',
+    borderRadius: 8,
   },
   modalItem: {
-    padding: 10,
-    width: '100%',
-    alignItems: 'center',
-    marginVertical: 5,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22.375,
+    padding: 12,
   },
   modalItemText: {
-    fontSize: 16,
+    fontSize: 18,
+  },
+  registerButton: {
+    backgroundColor: '#f1c0ba',
+    padding: 15,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: '#fff',
+    fontSize: 18,
   },
 });
 

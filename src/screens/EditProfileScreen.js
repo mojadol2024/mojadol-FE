@@ -148,14 +148,14 @@ const EditProfileScreen = () => {
                     userPw: updatedFields.userPw,
                 }, 
                 {
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                    headers: { Authorization: `${accessToken}` },
                 }
             );
 
             if (response.data === 'YES') {
                 Alert.alert('Success', '수정된 정보가 저장되었습니다.',
                     [
-                        {onPress: () => navigation.navigate('MyPage') }, // MyPage로 이동
+                        {onPress: () => navigation.navigate('Board') }, // MyPage로 이동
                     ]);
             } else {
                 Alert.alert('Error', '정보 수정 중 오류가 발생했습니다.');
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',

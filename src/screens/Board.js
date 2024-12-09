@@ -99,6 +99,7 @@ const Board = () => {
         <View style={styles.imageContainer}>
           <Image source={{ uri: item.photo }} style={styles.image} />
         </View>
+        <Text>{item.report === 0 ? "실종" : item.report === 1 ? "제보" : item.report == null ? "정보 없음" : ""}</Text>
         <Text style={styles.breed}>{item.breedName}</Text>
         <Text>발견장소: {item.location}</Text>
         <Text>실종날짜: {item.lostDate}</Text>
@@ -130,30 +131,37 @@ const Board = () => {
   };
 
   return (
-      <View style={styles.container}>
-        {/* 검색 영역 */}
-        <View style={styles.searchContainer}>
-          {/* 지역 선택 드롭다운 */}
-          <TouchableOpacity style={styles.locationContainer} onPress={() => setSubLocationVisible(!subLocationVisible)}>
-            <Text style={styles.locationText}>{province || "전체"}</Text>
-          </TouchableOpacity>
-
-          {subLocationVisible && (
-            <View style={styles.dropdown}>
-              <ScrollView style={styles.scrollContainer}>
-                {locations.map((location) => (
-                  <TouchableOpacity key={location} style={styles.dropdownItem} onPress={() => handleLocationPress(location)}>
-                    <Text style={styles.dropdownItemText}>{location}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
+    <View style={styles.container}>
+      {/* 검색 영역 */}
+      <View style={styles.searchContainer}>
+        {/* 지역 선택 드롭다운 */}
+        <TouchableOpacity
+          style={styles.locationContainer}
+          onPress={() => setSubLocationVisible(!subLocationVisible)}
+        >
+          <Text style={styles.locationText}>{province || "전체"}</Text>
+        </TouchableOpacity>
+  
+        {subLocationVisible && (
+          <View style={styles.dropdown}>
+            <ScrollView style={styles.scrollContainer}>
+              {locations.map((location) => (
+                <TouchableOpacity
+                  key={location}
+                  style={styles.dropdownItem}
+                  onPress={() => handleLocationPress(location)}
+                >
+                  <Text style={styles.dropdownItemText}>{location}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+  
         {/* 검색창 */}
         <TextInput
           style={styles.searchInput}
-          placeholder="검색"
+          placeholder="견종 검색"
           value={breedName}
           onChangeText={setBreedName}
         />
@@ -161,7 +169,6 @@ const Board = () => {
           <Text style={styles.searchButtonText}>검색</Text>
         </TouchableOpacity>
       </View>
-
       {/* 게시글 리스트 */}
       {boardData.length === 0 ? (
         <Text style={styles.noDataText}>게시글이 없습니다.</Text>
@@ -177,7 +184,6 @@ const Board = () => {
           onEndReachedThreshold={0.5}
         />
       )}
-
       {/* 로딩 중 */}
       {loading && (
         <View style={styles.loadingContainer}>
@@ -185,7 +191,7 @@ const Board = () => {
         </View>
       )}
     </View>
+  
   );
 };
-
 export default Board;
