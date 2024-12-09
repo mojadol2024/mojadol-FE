@@ -64,10 +64,7 @@ const styles = StyleSheet.create({
       paddingVertical: 4,
       paddingHorizontal: 8,
     },
-    replyButtonText: {
-      color: '#666',
-      fontSize: 12,
-    },
+  
     repliesContainer: {
       marginLeft: 20,
       marginTop: 8,
@@ -99,14 +96,19 @@ const styles = StyleSheet.create({
       backgroundColor: '#fff',
       borderWidth: 1,
       borderColor: '#dee2e6',
-      borderRadius: 8,
+      borderRadius: 22.375,
       padding: 8,
-      marginBottom: 8,
+      marginBottom: 5,
+      shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 8 }, // 그림자의 위치를 아래로 조금 더 많이 이동
+    shadowOpacity: 0.3, // 그림자의 투명도 증가
+    shadowRadius: 10, // 그림자 퍼짐 정도 증가
+    elevation: 10, // 안드로이드에서의 그림자 강도를 증가
     },
     replySendButton: {
-      backgroundColor: '#007bff',
+      backgroundColor: '#f1c0ba',
       padding: 8,
-      borderRadius: 8,
+      borderRadius:22.375,
       alignSelf: 'flex-end',
     },
     commentInputContainer: {
@@ -131,15 +133,12 @@ const styles = StyleSheet.create({
       marginRight: 10,
     },
     sendButton: {
-      backgroundColor: '#007bff',
+      backgroundColor: '#f1c0ba',
       paddingVertical: 10,
       paddingHorizontal: 20,
-      borderRadius: 20,
+      borderRadius: 22.375,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    sendButtonText: {
-      color: 'white',
     },
     bannerAdContainer: {
       justifyContent: 'bottom', // 세로 중앙 정렬
@@ -170,24 +169,44 @@ const styles = StyleSheet.create({
       marginTop: 10, // 상단 마진을 조금 추가해서 버튼이 강아지 정보 박스와 붙지 않게 함
     },
     button: {
-      backgroundColor: '#007BFF',
+      backgroundColor: '#f1c0ba',
       paddingVertical: 8,
       paddingHorizontal: 15,
       borderRadius: 23.375,
+      shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 8 }, // 그림자의 위치를 아래로 조금 더 많이 이동
+    shadowOpacity: 0.3, // 그림자의 투명도 증가
+    shadowRadius: 10, // 그림자 퍼짐 정도 증가
+    elevation: 10, // 안드로이드에서의 그림자 강도를 증가
+    borderWidth: 0.1, // 테두리 두께
+    borderColor: '#000', // 검은 색 테두리
+    
+      
     },
     editButtonText: {
-      color: '#FFFFFF',
       fontWeight: 'bold',
     },
     deleteButtonText: {
       color: '#007BFF ',
       fontWeight: 'bold',
+      fontSize: 14,
     },
+    replyButtonText: {
+      color: '#666',
+      fontWeight: 'bold',
+      fontSize: 14,
+      lineHeight: 19  },
     deleteButton: {
       position: 'absolute',
       top: -2,  // 위로 올리기 위한 값 (값을 조절)
       right: 33,  // 오른쪽으로 보내기 위한 값 (값을 조절)
       padding: 5,
+    },
+    optionsText: {
+      fontSize: 18,
+      lineHeight: 6, // 점들 간격을 조절
+      textAlign: 'center',
+      color: '#666',
     },
     
   });

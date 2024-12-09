@@ -13,18 +13,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  locationContainer: {
-    height: 40,
-    width: '21.5%',
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 23.375,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    backgroundColor: '#f9f9f9',
-    marginLeft: 10,
-  },
   locationText: {
     fontSize: 14,
     textAlign: 'center',
@@ -32,8 +20,8 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    top: 50,
-    left: '5%',
+    top: -40,
+    left: '0%',
     width: '33%',
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -58,16 +46,35 @@ const styles = StyleSheet.create({
     height: 40,
     width: '55%',
     borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 15,
+    borderWidth: 0,
+    borderRadius: 22.375,
     paddingHorizontal: 8,
     backgroundColor: '#f9f9f9',
+    marginTop: -120,
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 4 }, // 그림자의 위치
+    shadowOpacity: 0.1, // 그림자의 투명도
+    shadowRadius: 8, // 그림자의 퍼짐 정도
+    elevation: 5, // 안드로이드에서의 그림자 효과
   },
-  writeButton: {
-    backgroundColor: '#008CBA',
-    padding: 10,
-    borderRadius: 10,
+  locationContainer: {
+    height: 40,
+    width: '21.5%',
+    borderColor: 'gray',
+    borderWidth: 0,
+    borderRadius:22.375,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    backgroundColor: '#f1c0ba',
+    marginTop: -120,
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 4 }, // 그림자의 위치
+    shadowOpacity: 0.1, // 그림자의 투명도
+    shadowRadius: 8, // 그림자의 퍼짐 정도
+    elevation: 5, // 안드로이드에서의 그림자 효과
   },
+  
   writeButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -76,7 +83,7 @@ const styles = StyleSheet.create({
     width: '45%',
     backgroundColor: '#fff',
     marginBottom: 15,
-    borderRadius: 10,
+    borderRadius: 22.375,
     padding: 10,
     marginLeft: '2%',
     marginRight: '2%',
@@ -163,6 +170,28 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     marginBottom: 10,
   },
+  searchButton: {
+    height: 40,
+    width: 70,
+    marginTop: -120,
+    borderRadius: 22.375,
+    backgroundColor: '#f1c0ba', // 검색 버튼 배경색
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 8 }, // 그림자의 위치를 아래로 조금 더 많이 이동
+    shadowOpacity: 0.3, // 그림자의 투명도 증가
+    shadowRadius: 10, // 그림자 퍼짐 정도 증가
+    elevation: 10, // 안드로이드에서의 그림자 강도를 증가
+
+  },
+  searchButtonText: {
+    color: '#000', // 글자 색상
+    fontWeight: '100', // 글자를 굵게
+    fontSize: 13, // 글자 크기
+  },
+  
+  
 });
 
 export default styles;
