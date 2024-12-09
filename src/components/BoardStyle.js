@@ -13,27 +13,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  locationContainer: {
-    height: 25,
-    width: '20%',
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    backgroundColor: '#f9f9f9',
-    marginLeft: 10,
-  },
   locationText: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
     color: '#333',
   },
   dropdown: {
     position: 'absolute',
-    top: 50,
-    left: '5%',
+    top: -40,
+    left: '0%',
     width: '33%',
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -55,18 +43,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   searchInput: {
-    height: 30,
+    height: 40,
     width: '55%',
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 15,
     paddingHorizontal: 8,
     backgroundColor: '#f9f9f9',
+    marginTop: -120,
   },
   writeButton: {
     backgroundColor: '#008CBA',
     padding: 10,
     borderRadius: 10,
+    marginTop: -120,
+  },
+  locationContainer: {
+    height: 40,
+    width: '21.5%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 23.375,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    backgroundColor: '#f9f9f9',
+    marginTop: -120,
   },
   writeButtonText: {
     color: '#fff',
@@ -80,16 +82,24 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: '2%',
     marginRight: '2%',
+    shadowColor: '#000', // 그림자 색상
+    shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋을 더 크게 설정하여 입체감 증가
+    shadowOpacity: 0.5, // 그림자 투명도를 조금 더 높여서 더 강한 그림자 효과
+    shadowRadius: 5, // 그림자 확산 정도를 늘려서 더 부드럽고 넓은 그림자
+    elevation: 10, // Android 그림자 강도를 증가시켜 더 두드러진 그림자
   },
   imageContainer: {
-    position: 'relative',
+    borderRadius: 10,
+    overflow: 'hidden', // 이미지를 박스에 맞추어 자르기
     marginBottom: 10,
   },
   image: {
     width: '100%',
     height: 120,
     borderRadius: 10,
-    marginBottom: 5,
+  },
+  textContainer: {
+    padding: 10,
   },
   statusOverlay: {
     position: 'absolute',
@@ -125,6 +135,35 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     color: '#888',
+  },
+  buttonPrimary: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonPrimaryText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 16,
+    color: '#666',
+  },
+  bannerAdContainer: {
+    width: '100%',
+    height: 60,
+    maxWidth: 600,
+    marginBottom: 10,
   },
 });
 
