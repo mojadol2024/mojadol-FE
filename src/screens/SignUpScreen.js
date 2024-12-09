@@ -36,7 +36,6 @@ const SignUpScreen = () => {
     const [isEmailAvailable, setIsEmailAvailable] = useState(null);
     const [emailChecked, setEmailChecked] = useState(false);
     const [emailValidationMessage, setEmailValidationMessage] = useState('');
-
     const [passwordRules, setPasswordRules] = useState({
         length: false,
         letter: false,
@@ -89,6 +88,7 @@ const SignUpScreen = () => {
         if (!validateId(userId)) {
             Alert.alert('Error', '아이디는 6자 이상, 영어와 숫자를 포함해야 합니다.');
             setIsIdAvailable(false);
+
             return;
         }
 

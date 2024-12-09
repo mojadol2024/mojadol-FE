@@ -20,6 +20,7 @@ const StartLogin = ({ navigation }) => {
         }
 
         try {
+            console.log(`${API_URL}`)
             const response = await axios.post(`${API_URL}/auth/login`, {
                 userId: userId,
                 userPw: userPw,
