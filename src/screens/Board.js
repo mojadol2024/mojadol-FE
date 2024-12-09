@@ -169,7 +169,6 @@ const Board = () => {
           <Text style={styles.searchButtonText}>검색</Text>
         </TouchableOpacity>
       </View>
-  
       {/* 게시글 리스트 */}
       {boardData.length === 0 ? (
         <Text style={styles.noDataText}>게시글이 없습니다.</Text>
@@ -185,7 +184,6 @@ const Board = () => {
           onEndReachedThreshold={0.5}
         />
       )}
-  
       {/* 로딩 중 */}
       {loading && (
         <View style={styles.loadingContainer}>

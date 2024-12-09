@@ -190,8 +190,6 @@ const styles = StyleSheet.create({
     fontWeight: '100', // 글자를 굵게
     fontSize: 13, // 글자 크기
   },
-  
-  
 });
 
 export default styles;
