@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 14,
     color: '#555',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   contentContainer: {
     marginTop: 10,
