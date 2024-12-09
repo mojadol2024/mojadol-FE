@@ -29,11 +29,10 @@ const MyActivityScreen = () => {
       const response = await axios.get(`${API_URL}/myActivity/myBoardList?page=${page}`, {
         headers: {
           Authorization: accessToken,
+          
         },
       });
       const data = response.data;
-
-      
 
       setMyPosts((prevData) => [...prevData, ...data.content]);
       setPageData(data.pagination);
@@ -109,10 +108,9 @@ const MyActivityScreen = () => {
         />
 
         <View style={styles.textContainer}>
-          <Text style={styles.statusOverlay}>{item.report}</Text>
           <Text style={styles.breed}>{item.breedName}</Text>
-          <Text>장소: {item.location}</Text>
-          <Text>실종날짜: {item.lostDate}</Text>
+          <Text>{item.report === 0 ? '실종 장소: ' : '제보 장소: '} {item.location}</Text>
+          <Text>{item.report === 0 ? '실종 날짜: ' : '제보 날짜: '} {item.lostDate}</Text>
         </View>
       </View>
 
@@ -123,7 +121,7 @@ const MyActivityScreen = () => {
           ]}
         >
           <Text style={styles.reportText}>
-            {item.report === 0 ? '실종' : '발견'}
+            {item.report === 0 ? '실종' : '제보'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -204,7 +202,7 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#F1c0ba',
     borderRadius: 22.375,
     padding: 10,
@@ -215,7 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1c0ba',
   },
   tabText: {
-    color: '#000',
+    color: '#aaa',
     fontWeight: 'bold',
   },
   activeText: {
@@ -267,8 +265,8 @@ const styles = StyleSheet.create({
   },
   reportBox: {
     position: 'absolute',
-    top: -2, 
-    right: -2, 
+    top: -3, 
+    right: -3, 
     paddingVertical: 5, 
     paddingHorizontal: 10, 
     borderRadius: 22.375,
@@ -276,10 +274,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   missingReport: {
-    backgroundColor: '#f5fde9', 
+    backgroundColor: '#DEECEB', 
   },
   foundReport: {
-    backgroundColor: '#fbf3e9', 
+    backgroundColor: '#fbf3e0', 
   },
   reportText: {
     fontSize: 12,

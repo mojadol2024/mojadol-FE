@@ -1,9 +1,10 @@
 import React, { useState, useEffect, } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';  // TextInput 추가
+import { View, Text, TouchableOpacity, StyleSheet, Modal, TextInput, Alert, Switch } from 'react-native';  // TextInput 추가
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from '@env';
+import PushNotification from 'react-native-push-notification';
 
 export default function MyPageScreen() {
   // 닉네임 상태 생성
@@ -13,6 +14,7 @@ export default function MyPageScreen() {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const navigation = useNavigation();
+  const [isPushEnabled, setIsPushEnabled] = useState(false);
 
   useEffect(() => {
     const fetchMyPosts = async () => {
@@ -31,6 +33,23 @@ export default function MyPageScreen() {
     };
     fetchMyPosts()
 
+  }, []);
+
+  useEffect(() => {
+    const fetchPushNotificationSetting = async () => {
+      try {
+        // AsyncStorage에서 저장된 푸시 알림 상태 불러오기
+        const savedPushNotification = await AsyncStorage.getItem('pushNotificationEnabled');
+        if (savedPushNotification !== null) {
+          // 저장된 값이 있으면 해당 상태로 초기화
+          setIsPushEnabled(savedPushNotification === 'true');
+        }
+      } catch (error) {
+        console.error('푸시 알림 상태 불러오기 실패', error);
+      }
+    };
+  
+    fetchPushNotificationSetting();
   }, []);
 
   const handlePasswordCheck = async () => {
@@ -70,10 +89,93 @@ export default function MyPageScreen() {
     }
 };
 
+const togglePushNotification = async (value) => {
+  setIsPushEnabled(value); // 푸시 알림 상태 업데이트
+  try {
+    // AsyncStorage에 푸시 알림 상태 저장
+    await AsyncStorage.setItem('pushNotificationEnabled', value ? 'true' : 'false');
+
+    if (value) {
+      // 푸시 알림을 활성화할 때 권한을 요청
+      PushNotification.checkPermissions((permissions) => {
+        if (!permissions.alert) {
+          // 알림 권한이 없으면 요청
+          PushNotification.requestPermissions();
+        }
+      });
+
+      // 푸시 알림을 활성화할 때 onNotification 콜백을 설정
+      PushNotification.configure({
+        onNotification: function(notification) {
+          console.log("푸시 알림", notification);
+        },
+        // 기타 설정 (옵션으로 아이콘 배지 수 설정)
+        onAction: function(notification) { console.log("Action", notification.action); },
+        onRegistrationError: function(err) { console.error(err); },
+      });
+    } else {
+      // 푸시 알림 비활성화 시 onNotification 콜백을 비워서 알림을 무시
+      PushNotification.configure({
+        onNotification: function(notification) {
+          return; // 알림 무시
+        },
+        // 아이콘 배지 초기화
+        onRegistrationError: function(err) { console.error(err); },
+      });
+      PushNotification.setApplicationIconBadgeNumber(0); // 앱 아이콘 배지 초기화
+    }
+  } catch (error) {
+    console.error('푸시 알림 설정 오류', error);
+  }
+};
+
+const handleLogout = async () => {
+  try {
+    // 액세스 토큰을 AsyncStorage에서 가져옴
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    
+    if (accessToken) {
+      // 백엔드에 로그아웃 요청
+      await axios.post(`${API_URL}/auth/logout`, {}, {
+        headers: {
+          Authorization: `${accessToken}`,
+        },
+      });
+    }
+
+    // AsyncStorage에서 액세스 토큰 삭제
+    await AsyncStorage.removeItem('accessToken');
+    
+    // 로그아웃 후 로그인 화면으로 이동
+    navigation.replace('LoginScreen');
+  } catch (error) {
+    // 로그아웃 요청 중 오류가 발생하면 에러 처리
+    if (error.response && error.response.status === 401) {
+      // 401 에러가 발생한 경우 로그인 화면으로 리다이렉트
+      Alert.alert('로그인 정보가 만료되었습니다. 다시 로그인해주세요.');
+      navigation.replace('LoginScreen');
+    } else {
+      console.error('로그아웃 실패', error);
+      Alert.alert('로그아웃 중 오류가 발생했습니다.');
+    }
+  }
+};
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>{nickname}</Text>
+        <Text style={styles.greeting}>{nickname}님</Text>
+        <View style={styles.pushNotificationContainer}>
+          <Text style={styles.pushNotificationText}>
+            {isPushEnabled ? '알림 on' : '알림 off'}
+          </Text>
+          <Switch
+            value={isPushEnabled}
+            onValueChange={togglePushNotification} // 토글 상태 변경 함수
+            trackColor={{ true: '#F1c0ba', false: '#eaeaea' }} 
+            thumbColor={isPushEnabled ? '#ffffff' : '#cccccc'}
+          />
+        </View>
       </View>
 
       {/* 메뉴 섹션 */}
@@ -138,12 +240,6 @@ export default function MyPageScreen() {
           </View>
         </Modal>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Alarm')}
-        >
-          <Text style={styles.menuItemText}>알림 설정</Text>
-        </TouchableOpacity>
 
         <Text style={styles.menuTitle}>정보</Text>
         <TouchableOpacity
@@ -155,7 +251,7 @@ export default function MyPageScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('InquiryList')}
+          onPress={() => navigation.navigate('Inquiry')}
         >
           <Text style={styles.menuItemText}>문의하기</Text>
         </TouchableOpacity>
@@ -164,7 +260,7 @@ export default function MyPageScreen() {
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Payment')}>
           <Text style={styles.menuItemText}>추천 60분 후원하기</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
           <Text style={styles.menuItemText}>로그아웃</Text>
         </TouchableOpacity>
       </View>
@@ -204,7 +300,7 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#CCCCCC',
+    borderBottomColor: '#eaeaea',
   },
   menuItemText: {
     fontSize: 14,
@@ -272,5 +368,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  
 });
 
