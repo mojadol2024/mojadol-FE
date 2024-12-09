@@ -15,20 +15,19 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from '@env';
-import { launchImageLibrary } from 'react-native-image-picker';  // 이미지 피커 추가
-import { useNavigation } from '@react-navigation/native';  // 네비게이션 훅 추가
-
+import { launchImageLibrary } from 'react-native-image-picker';
+import { useNavigation } from '@react-navigation/native';
 
 const DogRegistration = () => {
-  const navigation = useNavigation();  // 네비게이션 훅 사용
+  const navigation = useNavigation();
   const [missingDate, setMissingDate] = useState('');
   const [breed, setBreed] = useState('');
-  const [province, setProvince] = useState(''); // 도
-  const [city, setCity] = useState(''); // 시
-  const [district, setDistrict] = useState(''); // 동
+  const [province, setProvince] = useState(''); 
+  const [city, setCity] = useState(''); 
+  const [district, setDistrict] = useState(''); 
   const [characteristics, setCharacteristics] = useState('');
   const [contact, setContact] = useState('');
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]); // 여러 사진을 저장할 배열로 변경
 
   // Modal visibility states
   const [isRegionModalVisible, setRegionModalVisible] = useState(false);
@@ -53,18 +52,20 @@ const DogRegistration = () => {
       const formData = new FormData();
       formData.append('lostDate', missingDate);
       formData.append('breedName', breed);
-      formData.append('province', province);  // 도
-      formData.append('city', city);  // 시
-      formData.append('district', district);  // 동
+      formData.append('province', province);
+      formData.append('city', city);
+      formData.append('district', district);
       formData.append('memo', characteristics);
       formData.append('report', 1);
-      if (photo) {
-        formData.append('photo', {
-          uri: photo, // 선택된 사진의 URI
-          type: 'image/jpeg', // 파일 형식
-          name: 'photo.jpg', // 파일 이름
+
+      // 여러 사진 추가 로직
+      photos.forEach((photoUri, index) => {
+        formData.append('photos', {
+          uri: photoUri,
+          type: 'image/jpeg',
+          name: `photo_${index}.jpg`,
         });
-      }
+      });
 
       // POST 요청으로 실종견 등록
       const response = await axios.post(
@@ -77,11 +78,6 @@ const DogRegistration = () => {
       );
 
       if (response.status === 200) {
-        // 응답에서 사진 URL 처리
-        if (response.data.photoUrl) {
-          setPhoto(response.data.photoUrl);
-        }
-
         Alert.alert('성공', '실종견이 성공적으로 등록되었습니다!');
 
         // 필드 초기화
@@ -92,8 +88,8 @@ const DogRegistration = () => {
         setDistrict('');
         setCharacteristics('');
         setContact('');
-        setPhoto(null); // 사진 초기화
-        navigation.navigate('Board');  // 'Board'는 게시판 화면의 이름
+        setPhotos([]); // 사진 배열 초기화
+        navigation.navigate('Board');
       } else {
         Alert.alert('오류', '강아지 등록에 실패했습니다.');
       }
@@ -103,16 +99,26 @@ const DogRegistration = () => {
     }
   };
 
-  const pickImage = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
+  const pickImages = () => {
+    launchImageLibrary({ 
+      mediaType: 'photo', 
+      quality: 1,
+      selectionLimit: 5 // 최대 5장의 사진 선택 가능
+    }, (response) => {
       if (response.didCancel) {
         console.log('사용자가 이미지를 선택하지 않았습니다.');
       } else if (response.errorCode) {
         console.log('이미지 선택 에러:', response.errorMessage);
       } else {
-        setPhoto(response.assets[0].uri); // 선택한 사진 URI 저장
+        // 선택된 사진들의 URI 저장
+        const selectedPhotos = response.assets.map(asset => asset.uri);
+        setPhotos(selectedPhotos);
       }
     });
+  };
+
+  const removeImage = (indexToRemove) => {
+    setPhotos(photos.filter((_, index) => index !== indexToRemove));
   };
 
   return (
@@ -122,15 +128,27 @@ const DogRegistration = () => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         {/* 사진 표시 섹션 */}
-        <Text style={styles.label}>사진</Text>
-        {photo ? (
-          <Image source={{ uri: photo }} style={styles.image} />
-        ) : (
-          <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-            <Text style={styles.imagePlaceholder}>사진 등록</Text>
-          </TouchableOpacity>
-        )}
+        <Text style={styles.label}>사진 ({photos.length}/5)</Text>
+        <TouchableOpacity style={styles.imageContainer} onPress={pickImages}>
+          <Text style={styles.imagePlaceholder}>사진 등록</Text>
+        </TouchableOpacity>
 
+        {/* 선택된 사진들 미리보기 */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {photos.map((photoUri, index) => (
+            <View key={index} style={styles.thumbnailContainer}>
+              <Image source={{ uri: photoUri }} style={styles.thumbnail} />
+              <TouchableOpacity 
+                style={styles.removeImageButton} 
+                onPress={() => removeImage(index)}
+              >
+                <Text style={styles.removeImageText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* 나머지 입력 필드는 이전 코드와 동일 */}
         <Text style={styles.label}>발견일</Text>
         <TextInput
           style={styles.input}
@@ -139,6 +157,7 @@ const DogRegistration = () => {
           onChangeText={setMissingDate}
         />
 
+        {/* 이하 기존 코드와 동일 */}
         <Text style={styles.label}>견종</Text>
         <TextInput
           style={styles.input}
@@ -147,7 +166,7 @@ const DogRegistration = () => {
           onChangeText={setBreed}
         />
 
-        {/* 실종 지역 (도) 모달 */}
+        {/* 실손 지역 (도) 모달 */}
         <Text style={styles.label}>발견 지역</Text>
         <TouchableOpacity style={styles.input} onPress={() => setRegionModalVisible(true)}>
           <Text>{province ? province : '지역 선택'}</Text>
@@ -198,13 +217,6 @@ const DogRegistration = () => {
           onChangeText={setCharacteristics}
         />
 
-        <Text style={styles.label}>연락처</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="연락처"
-          value={contact}
-          onChangeText={setContact}
-        />
 
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
           <Text style={styles.registerButtonText}>등록하기</Text>
@@ -228,10 +240,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  image: {
-    width: '100%',
-    height: 150,
-    marginBottom: 20,
+  thumbnailContainer: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  thumbnail: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(255,0,0,0.7)',
+    borderRadius: 15,
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeImageText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   imagePlaceholder: {
     color: '#fff',
