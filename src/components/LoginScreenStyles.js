@@ -12,17 +12,14 @@ const styles = StyleSheet.create({
         marginTop: 20,
         alignItems: 'center',
     },
+    logoWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     logo: {
         width: 300,
         height: 300,
         resizeMode: 'contain',
-        marginBottom: -75,
-    },
-    subtitle: {
-        fontSize: 18,
-        color: '#666666',
-        textAlign: 'center',
-        marginBottom: 150,
     },
     highlightedText: {
         fontSize: 20,
@@ -31,11 +28,12 @@ const styles = StyleSheet.create({
         fontFamily: 'sans-serif-condensed',
     },
     startButtonContainer: {
+        marginTop: 50,
         width: '90%',
         marginBottom: 5,
     },
     startButton: {
-        backgroundColor: '#C78C30',
+        backgroundColor: '#F1c0ba',
         paddingVertical: 15,
         borderRadius: 22.375,
         alignItems: 'center',
@@ -44,7 +42,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     startButtonText: {
-        color: '#3C1E1E',
+        color: '#ffffff',
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -80,7 +78,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textDecorationLine: 'underline',
         marginTop: 20,
-        },
+    },
 });
 
 export default styles;

@@ -11,6 +11,7 @@ import MissingDogRegistration from '../screens/MissingDogRegistration';
 import SignUpScreen from '../screens/SignUpScreen';
 import StartLogin from '../screens/StartLogin';
 import ForgetAccount from '../screens/ForgetAccount';
+import ResetPassword from '../screens/ResetPassword';
 import MyActive from '../screens/MyActive';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import Inquiry from '../screens/Inquiry';
@@ -36,6 +37,7 @@ const LoginNavigator = () => {
       <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
       <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
       <Stack.Screen name="Inquiry" component={Inquiry} />
+      <Stack.Screen name="ResetPassword" component={ResetPassword} />
       <Stack.Screen name="NoticeScreen" component={NoticeScreen} />
       <Stack.Screen name="Payment" component={Payment} />
       <Stack.Screen name="NoticeDetailScreen" component={NoticeDetailScreen} />
