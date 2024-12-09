@@ -36,18 +36,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
-    height: 150,
+    height: 550,
     padding: 10,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#CCCCCC',
     marginBottom: 20,
@@ -55,8 +56,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     padding: 15,
-    backgroundColor: '#1A73E8', // 버튼 배경색을 연한 핑크색으로 설정
-    borderRadius: 10,
+    backgroundColor: '#F1c0ba', // 버튼 배경색을 연한 핑크색으로 설정
+    borderRadius: 22.375,
     alignItems: 'center',
   },
   submitButtonText: {
