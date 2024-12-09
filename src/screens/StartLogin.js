@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import CustomButton from '../components/CustomButton';
+import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Keyboard } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
+import styles from '../components/StartLoginStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFCMToken, saveTokenToServer } from '../utils/FCMUtils';
 
@@ -10,8 +10,15 @@ const StartLogin = ({ navigation }) => {
     const [userId, setUserId] = useState('');
     const [userPw, setUserPw] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
-    
+    const passwordRef = useRef();
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
     const handleLogin = async () => {
+        if (userId.trim() === '' || userPw.trim() === '') {
+            Alert.alert('Error', '아이디 및 비밀번호를 다시 확인해주세요.');
+            return;
+        }
+
         try {
             console.log(`${API_URL}`)
             const response = await axios.post(`${API_URL}/auth/login`, {
@@ -22,83 +29,92 @@ const StartLogin = ({ navigation }) => {
             const userSeq = response.headers.get("userSeq");
             await AsyncStorage.setItem('accessToken', accessToken);
             await AsyncStorage.setItem('userSeq', userSeq);
-            // 로그인 성공 후 FCM 토큰 저장 
+            // 로그인 성공 후 FCM 토큰 저장
             const token = await getFCMToken();
             if (token) {
-                // 서버에 토큰 저장 (userId는 로그인 후에 얻은 값으로 사용)
-                console.log(token);
-                saveTokenToServer(token, userId);  // 여기서 userId를 서버로 보냄
+                saveTokenToServer(token, userId);
             }
 
             setResponseMessage(`Login successful: ${response.data.message}`);
             navigation.navigate('Board');
         } catch (error) {
             if (error.response) {
-                setResponseMessage(`Login failed: ${error.response.data.error}`);
+                Alert.alert('Error', '아이디 및 비밀번호를 다시 확인해주세요.');
             } else {
-                setResponseMessage('Error connecting to the server');
+                Alert.alert('Error', '서버에 연결할 수 없습니다.');
             }
         }
     };
 
+    useEffect(() => {
+        console.log(`${API_URL}`);
+    });
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                setIsKeyboardVisible(true);
+            }
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                setIsKeyboardVisible(false);
+            }
+        );
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>로그인</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="ID"
-                    value={userId}
-                    onChangeText={setUserId}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={userPw}
-                    onChangeText={setUserPw}
-                    secureTextEntry
-                />
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+            <View style={styles.container}>
+                <Text style={styles.title}>로그인</Text>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="아이디"
+                        value={userId}
+                        onChangeText={setUserId}
+                        autoCapitalize="none"
+                        returnKeyType="next"
+                        onSubmitEditing={() => {
+                            if (passwordRef.current) {
+                                passwordRef.current.focus(); // 포커스를 비밀번호 입력으로 이동
+                            }
+                        }}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="비밀번호"
+                        value={userPw}
+                        onChangeText={setUserPw}
+                        autoCapitalize="none"
+                        secureTextEntry
+                        ref={passwordRef}
+                        returnKeyType="done"
+                        onSubmitEditing={handleLogin}
+                    />
+                </View>
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                    <Text style={styles.buttonText}>로그인</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('ForgetAccount')} style={styles.linkContainer}>
+                    <Text style={styles.linkText}>아이디 · 비밀번호 찾기</Text>
+                </TouchableOpacity>
+
+                {/* 하단 고정된 MOJADOL 텍스트 */}
+                {!isKeyboardVisible && (
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>MOJADOL</Text>
+                    </View>
+                )}
             </View>
-            <CustomButton title="로그인" onPress={handleLogin} />
-            <TouchableOpacity onPress={() => navigation.navigate('ForgetAccount')} style={styles.linkContainer}>
-                <Text style={styles.linkText}>아이디 · 비밀번호 찾기</Text>
-            </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    inputContainer: {
-        width: '90%',
-        marginBottom: 20,
-    },
-    input: {
-        backgroundColor: '#ffffff',
-        padding: 15,
-        borderRadius: 10,
-        borderColor: '#ddd',
-        borderWidth: 1,
-        marginBottom: 10,
-    },
-    linkContainer: {
-        marginTop: 10,
-    },
-    linkText: {
-        color: '#007BFF',
-        textDecorationLine: 'underline',
-    },
-});
 
 export default StartLogin;

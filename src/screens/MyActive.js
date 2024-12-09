@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { API_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,13 +29,14 @@ const MyActivityScreen = () => {
       const response = await axios.get(`${API_URL}/myActivity/myBoardList?page=${page}`, {
         headers: {
           Authorization: accessToken,
+          
         },
       });
       const data = response.data;
 
       setMyPosts((prevData) => [...prevData, ...data.content]);
       setPageData(data.pagination);
-      setLoading(false);
+      //setLoading(false);
     } catch (error) {
       console.error('내가 쓴 글 가져오기 실패:', error);
     } finally {
@@ -45,6 +46,7 @@ const MyActivityScreen = () => {
 
   const fetchMyComments = async (page) => {
     try {
+      setLoading(true);
       const accessToken = await AsyncStorage.getItem('accessToken');
       const response = await axios.get(`${API_URL}/myActivity/myCommentList?page=${page}`, {
         headers: {
@@ -55,7 +57,7 @@ const MyActivityScreen = () => {
 
       setMyComments((prevData) => [...prevData, ...data.content]);
       setPageData(data.pagination);
-      setLoading(false);
+      //setLoading(false);
     } catch (error) {
       console.error('내가 쓴 댓글 가져오기 실패:', error);
       Alert.alert('댓글 불러오기 실패', '댓글 정보를 불러오지 못했습니다.');
@@ -66,17 +68,20 @@ const MyActivityScreen = () => {
 
   // 페이지 증가
   const handleLoadMore = () => {
-    if (loading || (pageData && page >= pageData.totalPages)) return;
+    //if (loading || (pageData && page >= pageData.totalPages)) return;
+    if (loading || !pageData || page >= pageData.totalPages) return;  // 페이지가 마지막이면 더 이상 로딩하지 않음 
     setPage((prevPage) => prevPage + 1);
   };
 
   // 탭 변경에 따른 데이터 초기화
   useEffect(() => {
     if (activeTab === 'posts') {
-      setMyComments([]);
+      setMyPosts([]);
+      //setMyComments([]);
       setPage(0);
     } else if (activeTab === 'comments') {
-      setMyPosts([]);
+      //setMyPosts([]);
+      setMyComments([]);
       setPage(0);
     }
   }, [activeTab]);
@@ -87,25 +92,38 @@ const MyActivityScreen = () => {
     } else if (activeTab === 'comments') {
       fetchMyComments(page);
     }
-  }, [page]);
+  }, [page, activeTab]);
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <TouchableOpacity
-        style={styles.viewButton}
-        onPress={() => navigation.navigate('BoardDetail', { boardSeq: item.boardSeq })}
-      >
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: item.photo }} 
-            style={styles.image}
-            onError={(e) => console.log('Image load error', e.nativeEvent.error)}  
-          />
-          <Text style={styles.statusOverlay}>{item.report}</Text>
+      style={styles.viewButton}
+      onPress={() => navigation.navigate('BoardDetail', { boardSeq: item.boardSeq })}
+    >
+      <View style={styles.rowContainer}>
+        <Image
+          source={{ uri: item.photo }}
+          style={styles.image}
+          onError={(e) => console.log('Image load error', e.nativeEvent.error)}
+        />
+
+        <View style={styles.textContainer}>
+          <Text style={styles.breed}>{item.breedName}</Text>
+          <Text>{item.report === 0 ? '실종 장소: ' : '제보 장소: '} {item.location}</Text>
+          <Text>{item.report === 0 ? '실종 날짜: ' : '제보 날짜: '} {item.lostDate}</Text>
         </View>
-        <Text style={styles.breed}>{item.breedName}</Text>
-        <Text>발견장소: {item.location}</Text> 
-        <Text>실종날짜: {item.lostDate}</Text>
+      </View>
+
+      <View
+          style={[
+            styles.reportBox,
+            item.report === 0 ? styles.missingReport : styles.foundReport, // 0이면 실종, 1이면 제보
+          ]}
+        >
+          <Text style={styles.reportText}>
+            {item.report === 0 ? '실종' : '제보'}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -139,17 +157,25 @@ const MyActivityScreen = () => {
       </View>
 
       <View style={styles.content}>
-        <FlatList
-          ref={flatListRef}
-          data={activeTab === 'posts' ? myPosts : myComments}
-          renderItem={renderItem}
-          keyExtractor={(item) => `${item.boardSeq}`}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.7}
-          initialNumToRender={pageData.pageSize}
-          contentContainerStyle={styles.contentContainer}
-          onLayout={handleContentContainerLayout}
-        />
+        {/* 로딩 상태 표시 */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F1c0ba" />
+              <Text>로딩 중...</Text>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={activeTab === 'posts' ? myPosts : myComments}
+            renderItem={renderItem}
+            keyExtractor={(item) => `${item.boardSeq}`}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.7}
+            initialNumToRender={pageData.pageSize}
+            contentContainerStyle={styles.contentContainer}
+            onLayout={handleContentContainerLayout}
+          />
+        )}
       </View>
     </View>
   );
@@ -176,18 +202,18 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#c78c30',
+    borderWidth: 2,
+    borderColor: '#F1c0ba',
     borderRadius: 22.375,
     padding: 10,
     marginHorizontal: 5,
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#c78c30',
+    backgroundColor: '#F1c0ba',
   },
   tabText: {
-    color: '#000000',
+    color: '#aaa',
     fontWeight: 'bold',
   },
   activeText: {
@@ -198,11 +224,68 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 55,
+    height: 55,
     borderRadius: 25,
-    marginRight: 10,
+    marginRight: 25,
+    marginLeft: 10,
   },
+  loadingSpinner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  card: {
+    borderWidth: 1,
+    borderColor: '#cccccc', 
+    borderRadius: 10, 
+    padding: 15, 
+    marginBottom: 15, 
+    backgroundColor: '#ffffff', 
+    shadowColor: '#000', // 그림자 색상을 검정으로 설정
+    shadowOffset: { width: 0, height: 6 }, // 그림자 오프셋
+    shadowOpacity: 0.5, // 그림자 투명도 설정
+    shadowRadius: 5, // 그림자 퍼짐 정도 설정
+    elevation: 5, // Android 그림자 설정
+  },
+  rowContainer: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center', 
+    
+  },
+  breed: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  reportBox: {
+    position: 'absolute',
+    top: -3, 
+    right: -3, 
+    paddingVertical: 5, 
+    paddingHorizontal: 10, 
+    borderRadius: 22.375,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  missingReport: {
+    backgroundColor: '#DEECEB', 
+  },
+  foundReport: {
+    backgroundColor: '#fbf3e0', 
+  },
+  reportText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#aeaeae',
+    
+  },
+  
 });
 
 export default MyActivityScreen;
