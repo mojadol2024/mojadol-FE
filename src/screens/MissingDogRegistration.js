@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {
+import { //등록하는 건 이름, 몸무게, 나이 등을 모르니까 빼도 되나 
   View,
   Text,
   TextInput,
@@ -12,15 +12,25 @@ import {
   Alert,
   Image
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
-import { launchImageLibrary } from 'react-native-image-picker';  // 이미지 피커 추가
+import { useNavigation } from '@react-navigation/native';  // 네비게이션 훅 추가
+
+
 
 const MissingDogRegistration = () => {
+  const navigation = useNavigation();  // 네비게이션 훅 사용
+  const [name, setName] = useState('');
+  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
   const [missingDate, setMissingDate] = useState('');
   const [breed, setBreed] = useState('');
-  const [region, setRegion] = useState('');
+  const [province, setProvince] = useState('');
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState(''); // 동 추가
   const [characteristics, setCharacteristics] = useState('');
   const [contact, setContact] = useState('');
   const [photo, setPhoto] = useState(null);
@@ -30,14 +40,26 @@ const MissingDogRegistration = () => {
   const [isRegionModalVisible, setRegionModalVisible] = useState(false);
 
   // 전체 지역 목록
-  const regions = [
+  const provinces = [
     '전체','서울', '부산', '대구', '인천', '광주', '대전', '울산',
     '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주',
   ];
 
+  const handleChoosePhoto = () => {
+    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
+      if (response.didCancel) {
+        console.log('사용자가 이미지를 선택하지 않았습니다.');
+      } else if (response.errorCode) {
+        console.log('이미지 선택 에러:', response.errorMessage);
+      } else {
+        setPhoto(response.assets[0]);
+      }
+    });
+  };
+
   const handleRegister = async () => {
     // 필수 필드 검증
-    if (!breed || !region || !contact) {
+    if (!name || !gender || !age || !weight || !breed || !province || !contact) {
       Alert.alert('오류', '모든 필드를 채워주세요!');
       return;
     }
@@ -46,59 +68,61 @@ const MissingDogRegistration = () => {
       // 액세스 토큰 가져오기
       const accessToken = await AsyncStorage.getItem('accessToken');
 
-      // POST 요청으로 실종견 등록
-      const response = await axios.post(
-        `${API_URL}/missing-dog/register`, // 백엔드 엔드포인트
-        {
-          missingDate,
-          breed,
-          region,
-          characteristics,
-          contact,
-          photo,  // 사진 포함
+      // 사진 업로드
+      const formData = new FormData();
+      if (photo) {
+        formData.append('photo', {
+          uri: photo.uri,
+          type: photo.type,
+          name: photo.fileName,
+        });
+      }
+
+      // 다른 필드 추가
+      formData.append('dogName', name);
+      formData.append('dogGender', gender);
+      formData.append('dogAge', age);
+      formData.append('dogWeight', weight);
+      formData.append('lostDate', missingDate);
+      formData.append('breedName', breed);
+      formData.append('province', province);
+      formData.append('city', city);
+      formData.append('district', district);  // 동 추가
+      formData.append('memo', characteristics);
+      formData.append('report', 0);
+      
+      // POST 요청으로 강아지 등록
+      const response = await axios.post(`${API_URL}/board/write`, formData, {
+        headers: {
+          Authorization: `${accessToken}`,
+          'Content-Type': 'multipart/form-data',
         },
-        {
-          headers: {
-            Authorization: accessToken,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      });
 
       if (response.status === 200) {
-        // 응답에서 사진 URL 처리
-        if (response.data.photoUrl) {
-          setPhoto(response.data.photoUrl);
-        }
-
-        Alert.alert('성공', '실종견이 성공적으로 등록되었습니다!');
-
+        Alert.alert('성공', '강아지가 성공적으로 등록되었습니다!');
         // 필드 초기화
+        setName('');
+        setGender('');
+        setAge('');
+        setWeight('');
         setMissingDate('');
         setBreed('');
-        setRegion('');
+        setCity('');
+        setProvince('');
+        setDistrict('');  // 동 초기화
         setCharacteristics('');
         setContact('');
-        setPhoto(null); // 사진 초기화
+        setPhoto(null);
+        
+        navigation.navigate('Board');  // 'Board'는 게시판 화면의 이름
       } else {
-        Alert.alert('오류', '실종견 등록에 실패했습니다.');
+        Alert.alert('오류', '강아지 등록에 실패했습니다.');
       }
     } catch (error) {
-      console.error('실종견 등록 오류:', error);
+      console.error('강아지 등록 오류:', error);
       Alert.alert('오류', '서버 요청 중 문제가 발생했습니다.');
     }
-  };
-
-  const pickImage = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
-      if (response.didCancel) {
-        console.log('사용자가 이미지를 선택하지 않았습니다.');
-      } else if (response.errorCode) {
-        console.log('이미지 선택 에러:', response.errorMessage);
-      } else {
-        setPhoto(response.assets[0].uri); // 선택한 사진 URI 저장
-      }
-    });
   };
 
   return (
@@ -110,14 +134,69 @@ const MissingDogRegistration = () => {
         {/* 사진 표시 섹션 */}
         <Text style={styles.label}>사진</Text>
         {photo ? (
-          <Image source={{ uri: photo }} style={styles.image} />
+          <Image source={{ uri: photo.uri }} style={styles.image} />
         ) : (
-          <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+          <TouchableOpacity style={styles.imageContainer} onPress={handleChoosePhoto}>
             <Text style={styles.imagePlaceholder}>사진 등록</Text>
           </TouchableOpacity>
         )}
 
-        <Text style={styles.label}>실종일</Text>
+        <Text style={styles.label}>이름</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="강아지 이름"
+          value={name}
+          onChangeText={setName}
+        />
+
+        <Text style={styles.label}>성별</Text>
+        <TouchableOpacity style={styles.input} onPress={() => setGenderModalVisible(true)}>
+          <Text>{gender ? (gender === 'male' ? '수컷' : '암컷') : '성별 선택'}</Text>
+        </TouchableOpacity>
+        <Modal visible={isGenderModalVisible} transparent={true} animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity
+                onPress={() => {
+                  setGender('male');
+                  setGenderModalVisible(false);
+                }}
+                style={styles.modalItem}
+              >
+                <Text style={styles.modalItemText}>수컷</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setGender('female');
+                  setGenderModalVisible(false);
+                }}
+                style={styles.modalItem}
+              >
+                <Text style={styles.modalItemText}>암컷</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <Text style={styles.label}>나이</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="나이"
+          keyboardType="numeric"
+          value={age}
+          onChangeText={setAge}
+        />
+
+        <Text style={styles.label}>몸무게</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="몸무게 (kg)"
+          keyboardType="numeric"
+          value={weight}
+          onChangeText={setWeight}
+        />
+
+        <Text style={styles.label}>발견일</Text>
         <TextInput
           style={styles.input}
           placeholder="예: 2024년 9월 1일"
@@ -135,16 +214,17 @@ const MissingDogRegistration = () => {
 
         <Text style={styles.label}>실종 지역</Text>
         <TouchableOpacity style={styles.input} onPress={() => setRegionModalVisible(true)}>
-          <Text>{region ? region : '지역 선택'}</Text>
+          <Text>{province ? province : '지역 선택'}</Text>
         </TouchableOpacity>
+
         <Modal visible={isRegionModalVisible} transparent={true} animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              {regions.map((area) => (
+              {provinces.map((area) => (
                 <TouchableOpacity
                   key={area}
                   onPress={() => {
-                    setRegion(area);
+                    setProvince(area);
                     setRegionModalVisible(false);
                   }}
                   style={styles.modalItem}
@@ -155,11 +235,26 @@ const MissingDogRegistration = () => {
             </View>
           </View>
         </Modal>
+        {/* 시 */}
+        <TextInput
+          style={styles.input}
+          placeholder="시"
+          value={city}
+          onChangeText={setCity}
+        />
+        {/* 동 */}
+        <Text style={styles.label}>동</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="동"
+          value={district}
+          onChangeText={setDistrict}
+        />
 
         <Text style={styles.label}>특이사항</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="강아지의 특징, 실종된 장소 등 정보를 작성해주세요."
+          placeholder="강아지의 특징, 잃어버린 장소 등 정보를 작성해주세요."
           multiline
           numberOfLines={4}
           value={characteristics}
@@ -175,7 +270,7 @@ const MissingDogRegistration = () => {
         />
 
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-          <Text style={styles.registerButtonText}>등록</Text>
+          <Text style={styles.registerButtonText}>등록하기</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -187,6 +282,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#ffffff',
+  },
+  scrollContainer: {
+    paddingBottom: 20,
   },
   imageContainer: {
     width: '100%',

@@ -34,7 +34,7 @@ const App = () => {
   const navigation = useNavigation();
 
   const bannerAdUnitId = __DEV__ ? process.env.BANNER_AD_UNIT_ID_DEV : process.env.BANNER_AD_UNIT_ID_PROD;
-
+  
 
   // 게시글 상세 정보 가져오기
   useEffect(() => {
@@ -255,15 +255,15 @@ const App = () => {
 </View>
 
          {/* 수정/삭제 버튼 추가 */}
-         {isAuthor &&  (
+        {isAuthor && (
   <View style={styles.authorButtons}>
-    <TouchableOpacity 
-      style={[styles.button, { marginRight: 60, marginTop: -30  }]} // 수정 버튼 오른쪽 여백 조정
-      onPress={() => navigation.navigate('BoardUpdate', { boardSeq })}
+    <TouchableOpacity
+      style={[styles.button, { marginRight: 60, marginTop: -30 }]} // 수정 버튼 오른쪽 여백 조정
+      onPress={() => navigation.navigate('BoardUpdate', { boardSeq })} // 수정 화면으로 이동
     >
       <Text style={styles.editButtonText}>수정</Text>
     </TouchableOpacity>
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.button, { marginTop: -35.46 }]} // 삭제 버튼을 수정 버튼과 맞추기 위해 위로 올리기
       onPress={() => {
         Alert.alert(
