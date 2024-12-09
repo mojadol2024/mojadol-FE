@@ -8,6 +8,7 @@ import DogRegistration from '../screens/DogRegistration';
 import PaymentScreen from '../screens/Payment';
 import MyPage from '../screens/MyPage';
 import MissingDogRegistration from '../screens/MissingDogRegistration';
+import TermsAgreement from '../screens/TermsAgreement';
 import SignUpScreen from '../screens/SignUpScreen';
 import StartLogin from '../screens/StartLogin';
 import ForgetAccount from '../screens/ForgetAccount';
@@ -38,6 +39,7 @@ const LoginNavigator = () => {
       <Stack.Screen name="MissingDogRegistration" component={MissingDogRegistration} />
       <Stack.Screen name="Inquiry" component={Inquiry} />
       <Stack.Screen name="ResetPassword" component={ResetPassword} />
+      <Stack.Screen name="TermsAgreement" component={TermsAgreement} />
       <Stack.Screen name="NoticeScreen" component={NoticeScreen} />
       <Stack.Screen name="Payment" component={Payment} />
       <Stack.Screen name="NoticeDetailScreen" component={NoticeDetailScreen} />

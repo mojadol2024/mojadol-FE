@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import CustomButton from '../components/CustomButton';
 import styles from '../components/SignUpScreenStyle';
+import TermsAgreement from '../screens/TermsAgreement';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { generateRandomNickname } from '../utils/randomNick';
@@ -16,6 +17,7 @@ const SignUpScreen = () => {
     const [nickname, setNickname] = useState('');
     const [loading, setLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [isAgreementChecked, setIsAgreementChecked] = useState(false);
 
     // CapsLock & NumLock 상태
     const [capsLockOn, setCapsLockOn] = useState(false);
@@ -183,6 +185,11 @@ const SignUpScreen = () => {
 
         if (!/^\d{11}$/.test(phoneNumber)) {
             Alert.alert('Error', '전화번호는 11자리 숫자만 가능합니다.');
+            return;
+        }
+
+        if (!isAgreementChecked) {
+            Alert.alert('Error', '약관 동의서를 진행해주세요.');
             return;
         }
 
@@ -382,10 +389,26 @@ const SignUpScreen = () => {
                                     <Text style={styles.nicknameRefreshText}>🔄</Text>
                                 </TouchableOpacity>
                             </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 10 }}>
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate('TermsAgreement', {
+                                    setAgreementChecked: setIsAgreementChecked, // 약관 동의 상태 업데이트 함수 전달
+                                  })
+                                }
+                              >
+                                <Text style={{ textDecorationLine: 'underline', color: '#007BFF' }}>
+                                  약관 동의서 보기
+                                </Text>
+                              </TouchableOpacity>
+                              <Text style={{ marginLeft: 10, textAlign: 'center' }}>
+                                {isAgreementChecked ? '✔️' : '⬜️'} {/* 동의 여부에 따라 UI 업데이트 */}
+                              </Text>
+                            </View>
                             <CustomButton
                                 title="회원가입"
                                 onPress={handleSignUp}
-                                disabled={!idChecked || !isIdAvailable || !Object.values(passwordRules).every((rule) => rule)}
+                                disabled={!idChecked || !isIdAvailable || !emailChecked || !isEmailAvailable || !Object.values(passwordRules).every((rule) => rule) || !isAgreementChecked}
                             />
                         </View>
                     </View>
