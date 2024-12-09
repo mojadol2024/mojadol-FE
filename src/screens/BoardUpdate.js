@@ -1,125 +1,113 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { API_URL } from '@env';
 
-const BoardUpdate = () => {
-  const [boardData, setBoardData] = useState(null);
-  const [breedName, setBreedName] = useState('');
-  const [location, setLocation] = useState('');
-  const [lostDate, setLostDate] = useState('');
-  const [photo, setPhoto] = useState('');
-  const [loading, setLoading] = useState(false);
+const BoardUpdate = ({ route, navigation }) => {
+  const { boardSeq, onRefresh } = route.params; // onRefresh 콜백 전달
+  const [boardDetails, setBoardDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const API_URL = 'http://10.0.2.2:3000'; // 필요한 경우 API URL 수정
 
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { boardSeq } = route.params; // 전달받은 boardSeq
-
-  // 게시글 데이터 로드
-  const loadBoardData = async () => {
-    try {
-      setLoading(true);
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await axios.get(`${API_URL}/board/boardDetail?boardSeq=${boardSeq}`, {
-        headers: {
-          Authorization: `${accessToken}`,
-        },
-      });
-      const data = response.data;
-      setBoardData(data);
-      setBreedName(data.breedName);
-      setLocation(data.location);
-      setLostDate(data.lostDate);
-      setPhoto(data.photo);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching board data:', error);
-      setLoading(false);
-    }
-  };
-
-  // 게시글 데이터 로드 실행
   useEffect(() => {
-    loadBoardData();
+    fetchBoardDetails();
   }, []);
 
-  // 게시글 수정 요청
-  const handleUpdate = async () => {
+  // 게시글 정보를 서버에서 가져오는 함수
+  const fetchBoardDetails = async () => {
     try {
-      if (!breedName || !location || !lostDate) {
-        Alert.alert('모든 필드를 입력해주세요.');
-        return;
-      }
-
       const accessToken = await AsyncStorage.getItem('accessToken');
-      const response = await axios.put(
-        `${API_URL}/board/${boardSeq}`,
-        { breedName, location, lostDate, photo }, // 수정할 데이터
-        {
-          headers: {
-            Authorization: `${accessToken}`,
-          },
-        }
-      );
+      console.log(`Fetching: ${API_URL}/board/boardDetail?boardSeq=${boardSeq}`);
+      const response = await axios.get(`${API_URL}/board/boardDetail?boardSeq=${boardSeq}`, {
+        headers: { Authorization: accessToken },
+      });
 
-      if (response.status === 200) {
-        Alert.alert('게시글이 수정되었습니다.');
-        navigation.goBack(); // 이전 화면으로 이동
-      } else {
-        Alert.alert('수정에 실패했습니다.');
-      }
+      // 서버에서 받은 게시글 데이터를 상태에 저장
+      setBoardDetails(response.data.boardDetail);
     } catch (error) {
-      console.error('Error updating board:', error);
-      Alert.alert('수정 중 오류가 발생했습니다.');
+      console.error('게시글 정보를 가져오는 데 실패했습니다:', error);
+      Alert.alert('오류', '게시글 정보를 가져오는 데 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // 게시글 수정 API 호출
+  const handleSave = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      console.log('Saving board details with:', boardDetails);
+  
+      await axios.put(
+        `${API_URL}/board/update`, // 정확한 URL 사용
+        { ...boardDetails, boardSeq },
+        {
+          headers: { Authorization: ` ${accessToken}` }, // 'Bearer' 앞에 추가
+        }
+      );
+  
+      Alert.alert('성공', '게시글이 수정되었습니다.');
+      if (onRefresh) onRefresh(); // 데이터 갱신 호출
+      navigation.goBack(); // 수정 후 이전 화면으로 돌아가기
+    } catch (error) {
+      console.error('게시글 수정 중 오류 발생:', error);
+      Alert.alert('오류', '게시글 수정에 실패했습니다.');
+    }
+  };
+  
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {loading ? (
-        <Text style={styles.loadingText}>로딩 중...</Text>
-      ) : boardData ? (
-        <>
-          <Text style={styles.label}>품종</Text>
-          <TextInput
-            style={styles.input}
-            value={breedName}
-            onChangeText={setBreedName}
-            placeholder="품종 입력"
-          />
-
-          <Text style={styles.label}>발견 장소</Text>
-          <TextInput
-            style={styles.input}
-            value={location}
-            onChangeText={setLocation}
-            placeholder="발견 장소 입력"
-          />
-
-          <Text style={styles.label}>실종 날짜</Text>
-          <TextInput
-            style={styles.input}
-            value={lostDate}
-            onChangeText={setLostDate}
-            placeholder="YYYY-MM-DD"
-          />
-
-          <Text style={styles.label}>사진</Text>
-          {photo ? (
-            <Image source={{ uri: photo }} style={styles.image} />
-          ) : (
-            <Text style={styles.noPhotoText}>사진이 없습니다.</Text>
-          )}
-
-          <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-            <Text style={styles.buttonText}>수정 완료</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <Text style={styles.errorText}>게시글 데이터를 불러올 수 없습니다.</Text>
-      )}
+      <Text style={styles.title}>게시글 수정</Text>
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.name || ''}
+        placeholder="개 이름"
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, name: text })}
+      />
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.age?.toString() || ''}
+        placeholder="나이"
+        keyboardType="numeric"
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, age: text })}
+      />
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.gender || ''}
+        placeholder="성별"
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, gender: text })}
+      />
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.weight?.toString() || ''}
+        placeholder="몸무게"
+        keyboardType="numeric"
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, weight: text })}
+      />
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.missingDate || ''}
+        placeholder="실종일 (YYYY-MM-DD)"
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, missingDate: text })}
+      />
+      <TextInput
+        style={styles.input}
+        value={boardDetails?.features || ''}
+        placeholder="특징"
+        multiline
+        onChangeText={(text) => setBoardDetails({ ...boardDetails, features: text })}
+      />
+      <Button title="수정 완료" onPress={handleSave} />
     </View>
   );
 };
@@ -128,50 +116,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  label: {
-    fontSize: 16,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
+    marginVertical: 10,
     padding: 10,
-    marginBottom: 15,
+    borderRadius: 5,
   },
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  noPhotoText: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 15,
-  },
-  button: {
-    backgroundColor: '#008CBA',
-    padding: 15,
-    borderRadius: 10,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  loadingText: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#888',
-  },
-  errorText: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: 'red',
   },
 });
 
