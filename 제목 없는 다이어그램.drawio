@@ -8,8 +8,8 @@
           <mxGeometry x="310" y="245" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-5" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;fontSize=11;endArrow=block;endFill=0;endSize=8;strokeWidth=1;shadow=0;labelBackgroundColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="WIyWlLk6GJQsqaUBKTNV-6" edge="1">
-          <mxGeometry x="0.6452" y="369" relative="1" as="geometry">
-            <mxPoint x="360" y="-289" as="offset" />
+          <mxGeometry x="0.6452" y="278" relative="1" as="geometry">
+            <mxPoint x="240" y="-138" as="offset" />
             <mxPoint x="120" y="460" as="targetPoint" />
             <Array as="points">
               <mxPoint x="70" y="610" />
