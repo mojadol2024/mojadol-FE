@@ -247,8 +247,8 @@ const App = () => {
     <Text style={styles.infoText}>개 이름: {boardDetail?.dogName || '강아지 이름 없음'}</Text>
     <Text style={styles.infoText}>견종: {boardDetail?.breedName || '미상'}</Text>
     <Text style={styles.infoText}>나이: {boardDetail?.dogAge || '알 수 없음'}</Text>
-    <Text style={styles.infoText}>성별: {boardDetail?.dogGender === 1 ? '수컷' : '암컷'}</Text>
-    <Text style={styles.infoText}>몸무게: {boardDetail?.dogWeight || '미상'}kg</Text>
+    <Text style={styles.infoText}>성별: {boardDetail?.dogGender === 1? '수컷': boardDetail?.dogGender === 0? '암컷': '정보 없음'}</Text>
+    <Text style={styles.infoText}>몸무게: {boardDetail?.dogWeight || '미상'}</Text>
     <Text style={styles.infoText}>실종일: {boardDetail?.lostDate || '날짜 정보 없음'}</Text>
     <Text style={styles.infoText}>특징: {boardDetail?.memo || '특징 없음'}</Text>
   </View>
