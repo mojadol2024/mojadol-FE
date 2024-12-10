@@ -6,6 +6,7 @@ import { API_URL } from '@env';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../components/BoardStyle';
 import { configurePushNotification, requestNotificationPermission, getFCMToken, setUpBackgroundMessageListener } from '../utils/FCMUtils';
+import { GooeyMenu } from './GooeyMenu';
 
 const Board = () => {
   const [province, setProvince] = useState('');
@@ -84,6 +85,7 @@ const Board = () => {
       if (refreshRoute) {
         setBoardData([]);
         setPage(0);
+        fetchBoardData(0, true);
         navigation.setParams({ refresh: false });
       }
     }, [navigation])
@@ -190,6 +192,9 @@ const Board = () => {
           <Text style={styles.loadingText}>로딩 중...</Text>
         </View>
       )}
+
+      {/* GooeyMenu 추가 */}
+      <GooeyMenu navigation={navigation} />
     </View>
   
   );
