@@ -3,11 +3,9 @@ import {
   View,
   Text,
   Image,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
   Alert
 } from 'react-native';
 import Swiper from 'react-native-swiper';
@@ -19,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../components/BoardClickStyle.js';
 import { BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 import Button from './Button';
+
 
 const App = () => {
   const route = useRoute();
@@ -32,6 +31,10 @@ const App = () => {
   const [isAuthor, setIsAuthor] = useState(false);
   const [commentSeq, setCommentSeq] = useState();
   const navigation = useNavigation();
+  const [isReplying, setIsReplying] = useState(false);  // 답글 작성 여부
+const [selectedComment, setSelectedComment] = useState(null);  // 답글을 달려고 선택한 댓글
+
+
 
   const bannerAdUnitId = __DEV__ ? process.env.BANNER_AD_UNIT_ID_DEV : process.env.BANNER_AD_UNIT_ID_PROD;
   
@@ -209,6 +212,7 @@ const App = () => {
         setComments([...comments, response.data]);
         setReplies({ ...replies, [commentSeq]: '' });
         setShowReplyInput(null);
+        setIsReplying(false);
     } catch (error) {
         console.error('Error sending reply:', error);
     }
@@ -217,28 +221,44 @@ const App = () => {
 
 
   // 답글 입력창 토글
-  const toggleReplyInput = (commentSeq) => {
-    setShowReplyInput(showReplyInput === commentSeq ? null : commentSeq); // 답글 입력창 토글
-  };
-  const toggleOptions = (commentSeq) => {
-    // 현재 선택된 댓글에 대한 옵션을 토글
-    setIsOptionsVisible(isOptionsVisible === commentSeq ? null : commentSeq);
+ const toggleReplyInput = (commentSeq) => {
+  //setShowReplyInput(showReplyInput === commentSeq ? null : commentSeq); // 답글 입력창 토글
+  setIsReplying(true); // 답글 작성 모드 ㅋㅋ
+  setSelectedComment(commentSeq); // 선택한 댓글의 commentSeq 저장
+};
+ 
+
+  const startReplying = (commentSeq) => {
+    setIsReplying(true);
+    setSelectedComment(commentSeq);
   };
 
+  
 
   return (
+    
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* 이미지 슬라이더 */}
         <View style={styles.imageContainer}>
           {boardDetail?.photos?.length > 0 && (
-            <Swiper style={styles.swiper} showsButtons={true}>
+            <Swiper style={styles.swiper} showsButtons={false}>
               {boardDetail.photos.map((photo, index) => (
                 <Image key={index} source={{ uri: photo }} style={styles.image} />
               ))}
             </Swiper>
           )}
         </View>
+
+        {/* 광고 배너 */ }
+        <View style={styles.bannerAdContainer}>
+          <BannerAd
+            unitId={bannerAdUnitId}
+            size={BannerAdSize.BANNER}
+            onAdFailedToLoad={(error) => console.error('Ad failed to load', error)} // 광고 로딩 실패 처리
+          />
+        </View>
+        {/* 댓글 목록 */}
 
         {/* 강아지 정보 */}
  {/* 강아지 정보 */}
@@ -249,7 +269,7 @@ const App = () => {
     <Text style={styles.infoText}>나이: {boardDetail?.dogAge || '알 수 없음'}</Text>
     <Text style={styles.infoText}>성별: {boardDetail?.dogGender === 1? '수컷': boardDetail?.dogGender === 0? '암컷': '정보 없음'}</Text>
     <Text style={styles.infoText}>몸무게: {boardDetail?.dogWeight || '미상'}</Text>
-    <Text style={styles.infoText}>실종일: {boardDetail?.lostDate || '날짜 정보 없음'}</Text>
+    <Text style={styles.infoText}>날짜: {boardDetail?.lostDate || '날짜 정보 없음'}</Text>
     <Text style={styles.infoText}>특징: {boardDetail?.memo || '특징 없음'}</Text>
   </View>
 </View>
@@ -258,13 +278,13 @@ const App = () => {
         {isAuthor && (
   <View style={styles.authorButtons}>
     <TouchableOpacity
-      style={[styles.button, { marginRight: 60, marginTop: -30 }]} // 수정 버튼 오른쪽 여백 조정
+      style={[styles.button]} // 수정 버튼 오른쪽 여백 조정
       onPress={() => navigation.navigate('BoardUpdate', { boardSeq })} // 수정 화면으로 이동
     >
       <Text style={styles.editButtonText}>수정</Text>
     </TouchableOpacity>
     <TouchableOpacity
-      style={[styles.button, { marginTop: -35.46 }]} // 삭제 버튼을 수정 버튼과 맞추기 위해 위로 올리기
+      style={[styles.button]} // 삭제 버튼을 수정 버튼과 맞추기 위해 위로 올리기
       onPress={() => {
         Alert.alert(
           '게시글 삭제',
@@ -280,19 +300,18 @@ const App = () => {
         );
       }}
     >
-      <Text style={styles.deleteButtonText}>삭제</Text>
+      <Text style={styles.editButtonText}>삭제</Text>
     </TouchableOpacity>
   </View>
 )}
-  {/* 광고 배너 */ }
-  <View style={styles.bannerAdContainer}>
-          <BannerAd
-            unitId={bannerAdUnitId}
-            size={BannerAdSize.BANNER}
-            onAdFailedToLoad={(error) => console.error('Ad failed to load', error)} // 광고 로딩 실패 처리
-          />
-        </View>
+
+
+
+
+
+
         {/* 댓글 목록 */}
+
 {/* 댓글 목록 */}
 <View style={styles.commentHeader}>
   <Text style={styles.commentHeaderText}>댓글 ({comments.length})</Text>
@@ -308,32 +327,14 @@ const App = () => {
     return (
       <View key={`comment-${comment.commentSeq}`} style={styles.commentContainer}>
         <View style={styles.mainComment}>
+          <TouchableOpacity
+            onPress={() => toggleReplyInput(comment.commentSeq)}>
           <View style={styles.commentHeader}>
             <Text style={styles.commentUser}>{comment.nickName}</Text>
-            <TouchableOpacity
-              style={styles.optionsButton}
-              onPress={() => toggleOptions(comment.commentSeq)} // '...' 버튼 클릭 시 옵션 표시
-            >
-              <Text style={styles.optionsText}>
-    .{'\n'}.{'\n'}.
-  </Text>
-            </TouchableOpacity>
-
-            {/* 옵션이 표시되는 경우만 삭제 및 답글 버튼을 보임 */}
-            {isOptionsVisible === comment.commentSeq && (
-              <View style={styles.optionButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.replyButton}
-                  onPress={() => toggleReplyInput(comment.commentSeq)} // 답글 입력창 토글
-                >
-                  <Text style={styles.replyButtonText}>답글</Text>
-                </TouchableOpacity>
-
-                {isAuthor && (
+            {isAuthor && (
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={styles.cdeleteButton}
                     onPress={() => {
-                      setCommentSeq(comment.commentSeq);
                       Alert.alert(
                         '댓글 삭제',
                         '정말로 이 댓글을 삭제하시겠습니까?',
@@ -341,7 +342,7 @@ const App = () => {
                           { text: '취소', style: 'cancel' },
                           {
                             text: '삭제',
-                            onPress: () => deleteComment(comment.commentSeq), // 삭제할 댓글의 commentSeq 전달
+                            onPress: () => deleteReply(comment.commentSeq, comment.commentSeq), // 삭제할 답글의 commentSeq 전달
                             style: 'destructive',
                           },
                         ]
@@ -351,10 +352,9 @@ const App = () => {
                     <Text style={styles.deleteButtonText}>삭제</Text>
                   </TouchableOpacity>
                 )}
-              </View>
-            )}
           </View>
           <Text style={styles.commentText}>{comment.commentText}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* 답글 목록 */}
@@ -391,23 +391,7 @@ const App = () => {
           </View>
         )}
 
-        {/* 답글 입력창 */}
-        {showReplyInput === comment.commentSeq && (
-          <View style={styles.replyInputContainer}>
-            <TextInput
-              style={styles.replyInput}
-              value={replies[comment.commentSeq] || ''}
-              onChangeText={(text) => setReplies({ ...replies, [comment.commentSeq]: text })}
-              placeholder="답글을 입력하세요."
-            />
-            <TouchableOpacity
-              style={styles.replySendButton}
-              onPress={() => sendReply(comment.commentSeq)}
-            >
-              <Text style={styles.sendButtonText}>답글 달기</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        
       </View>
     );
   })}
@@ -418,14 +402,44 @@ const App = () => {
 <View style={styles.commentInputContainer}>
   <TextInput
     style={styles.commentInput}
-    value={newComment}
-    onChangeText={setNewComment}
-    placeholder="댓글을 입력하세요."
+    value={isReplying ? replies[selectedComment] || '' : newComment}
+    onChangeText={(text) => {
+      if (isReplying) {
+        setReplies({ ...replies, [selectedComment]: text });
+      } else {
+        setNewComment(text);
+      }
+    }}
+    placeholder={isReplying ? "답글을 입력하세요." : "댓글을 입력하세요."}
   />
-  <TouchableOpacity style={styles.sendButton} onPress={sendComment}>
-    <Text style={styles.sendButtonText}>보내기</Text>
+  <TouchableOpacity
+    style={styles.sendButton}
+    onPress={() => {
+      if (isReplying) {
+        sendReply(selectedComment);  // 답글을 다는 경우
+      } else {
+        sendComment();  // 댓글을 다는 경우
+      }
+
+      // 버튼을 클릭할 때마다 상태를 반전시킴
+      if (isReplying) {
+        // 답글을 다는 상태에서 다시 클릭하면 댓글 작성 상태로 돌아감
+        setIsReplying(false);
+      } else {
+        // 댓글을 다는 상태에서 클릭하면 답글 작성 상태로 전환
+        setIsReplying(true);
+      }
+    }}
+  >
+    <Text style={styles.sendButtonText}>
+      {isReplying ? "답글 달기" : "댓글 달기"}
+    </Text>
   </TouchableOpacity>
 </View>
+
+
+
+
 </View>
 
 

@@ -6,34 +6,41 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: '#fff',
     },
     contentContainer: {
       padding: 10,
       paddingBottom: 100, // 댓글 입력창이 가려지지 않도록 여유 공간 확보
     },
     imageContainer: {
-      alignItems: 'center',
-      marginBottom: 20,
+      marginTop: 20,
+      marginBottom: 10,
+      justifyContent: 'center', // 세로 방향 가운데 정렬
+      alignItems: 'center', // 가로 방향 가운데 정렬
+      backgroundColor: '#eee', // 필요하면 배경색 추가
+      width: 350, // 고정된 크기
+      height: 250,
+      alignSelf: 'center', // 화면 중앙에 위치
+      overflow: 'hidden',
+      borderRadius: 22.375,
+
     },
     swiper: {
-      height: 200,
+      width: '100%',
     },
     image: {
-      width: width - 20,
-      height: 200,
-      resizeMode: 'cover',
+      width: '100%',
+      height: '100%',
+      resizeMode: 'contain',
       borderRadius: 10,
     },
+
     infoContainer: {
-      marginBottom: 20,
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
       marginBottom: 10,
     },
+    
     commentContainer: {
-      marginBottom: 15,
+      marginBottom: 20,
     },
     mainComment: {
       backgroundColor: '#f8f9fa',
@@ -67,19 +74,20 @@ const styles = StyleSheet.create({
   
     repliesContainer: {
       marginLeft: 20,
-      marginTop: 8,
+      marginTop: 10,
     },
     replyComment: {
       backgroundColor: '#f1f3f5',
       padding: 12,
       borderRadius: 23.375, // 답글 박스도 동일한 둥글기 적용
-      marginTop: 8,
+      marginBottom: 10,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 5,
     },
+
     replyUser: {
       fontWeight: 'bold',
       fontSize: 13,
@@ -88,29 +96,10 @@ const styles = StyleSheet.create({
     replyText: {
       fontSize: 14,
     },
-    replyInputContainer: {
-      marginTop: 8,
-      marginLeft: 20,
-    },
-    replyInput: {
-      backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: '#dee2e6',
-      borderRadius: 22.375,
-      padding: 8,
-      marginBottom: 5,
-      shadowColor: '#000', // 그림자 색상
-    shadowOffset: { width: 0, height: 8 }, // 그림자의 위치를 아래로 조금 더 많이 이동
-    shadowOpacity: 0.3, // 그림자의 투명도 증가
-    shadowRadius: 10, // 그림자 퍼짐 정도 증가
-    elevation: 10, // 안드로이드에서의 그림자 강도를 증가
-    },
-    replySendButton: {
-      backgroundColor: '#f1c0ba',
-      padding: 8,
-      borderRadius:22.375,
-      alignSelf: 'flex-end',
-    },
+
+    
+    
+    
     commentInputContainer: {
       position: 'absolute',
       bottom: 0,
@@ -122,6 +111,7 @@ const styles = StyleSheet.create({
       borderTopWidth: 1,
       borderTopColor: '#ddd',
     },
+
     commentInput: {
       flex: 1,
       borderColor: '#ccc',
@@ -132,6 +122,7 @@ const styles = StyleSheet.create({
       height: 40,
       marginRight: 10,
     },
+
     sendButton: {
       backgroundColor: '#f1c0ba',
       paddingVertical: 10,
@@ -140,12 +131,14 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
     },
+
     bannerAdContainer: {
       justifyContent: 'bottom', // 세로 중앙 정렬
       alignItems: 'bottom', // 가로 중앙 정렬
-      marginVertical: 40, // 배너 위 아래 여백
-      marginHorizontal: 35,
+      marginVertical: 5, // 배너 위 아래 여백
+      alignItems: 'center',
     },
+
     infoBox: {
       backgroundColor: '#fff', // 배경색
       borderRadius: 10, // 둥근 모서리
@@ -159,17 +152,22 @@ const styles = StyleSheet.create({
       borderWidth: 1, // 테두리 두께
       borderColor: '#ddd', // 테두리 색상
     },
+
     infoText: {
       fontSize: 16, // 텍스트 크기
       color: '#333', // 텍스트 색상
+      lineHeight: 30
     },
+
     authorButtons: {
-      flexDirection: 'column', // 수직 정렬
-      alignItems: 'flex-end',  // 오른쪽 정렬
-      marginTop: 10, // 상단 마진을 조금 추가해서 버튼이 강아지 정보 박스와 붙지 않게 함
+      flexDirection: 'row', // 버튼을 가로로 배치
+      justifyContent: 'flex-end', // 버튼을 오른쪽 정렬
+      alignItems: 'center', // 세로 방향으로 가운데 정렬
+      marginTop: 10, // 위쪽 여백
     },
+    
     button: {
-      backgroundColor: '#f1c0ba',
+      backgroundColor: '#aeaeae',
       paddingVertical: 8,
       paddingHorizontal: 15,
       borderRadius: 23.375,
@@ -180,35 +178,44 @@ const styles = StyleSheet.create({
     elevation: 10, // 안드로이드에서의 그림자 강도를 증가
     borderWidth: 0.1, // 테두리 두께
     borderColor: '#000', // 검은 색 테두리
+    marginLeft: 10,
     
       
     },
     editButtonText: {
       fontWeight: 'bold',
+      color: '#fff',
     },
     deleteButtonText: {
-      color: '#007BFF ',
+      color: '#999',
       fontWeight: 'bold',
-      fontSize: 14,
-    },
-    replyButtonText: {
-      color: '#666',
-      fontWeight: 'bold',
-      fontSize: 14,
-      lineHeight: 19  },
-    deleteButton: {
-      position: 'absolute',
-      top: -2,  // 위로 올리기 위한 값 (값을 조절)
-      right: 33,  // 오른쪽으로 보내기 위한 값 (값을 조절)
-      padding: 5,
-    },
-    optionsText: {
-      fontSize: 18,
-      lineHeight: 6, // 점들 간격을 조절
-      textAlign: 'center',
-      color: '#666',
+      fontSize: 12,
     },
     
+
+    deleteButton: {//답글 스타일
+      position: 'absolute',
+      top: 6,  // 위로 올리기 위한 값 (값을 조절)
+      right: 15,  // 오른쪽으로 보내기 위한 값 (값을 조절)
+      padding: 5,
+    },
+    cdeleteButton: { //부모댓글스타일
+      position: 'absolute',
+      top: -2,  // 위로 올리기 위한 값 (값을 조절)
+      right: 5,  // 오른쪽으로 보내기 위한 값 (값을 조절)
+      padding: 5,
+    },
+    sendButtonText: {
+      color: "#fff",
+      fontWeight: 'bold',
+    },
+    commentHeaderText: {
+      marginTop: 15,
+      marginBottom: 10,
+      fontWeight: 'bold',
+      marginLeft: 15,
+      color: '#444',
+    }
   });
 
   export default styles;
